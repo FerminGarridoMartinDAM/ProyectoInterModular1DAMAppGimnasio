@@ -11,7 +11,7 @@ Las credenciales que conectan nuestro código con este servidor en la nube son:
 
 ### 2. ¿Cómo la controlamos? (Gestión desde pgAdmin 4)
 Aunque los datos viven en Supabase, entrar a su web cada vez que quiero hacer un cambio es muy lento. Por eso, he vinculado ese servidor de la nube con el programa **pgAdmin 4** que tengo instalado en mi ordenador. 
-pgAdmin actúa como mi "mando a distancia". Desde ahí he ejecutado el archivo `01_creacion_tablas.sql` para crear toda la estructura de golpe, y es donde comprobaré visualmente que los datos que enviemos desde Java se están guardando bien.
+pgAdmin actúa como mi "mando a distancia". Desde ahí he ejecutado el archivo `02_Tablas_Base_de_Datos.sql` para crear toda la estructura de golpe, y es donde comprobaré visualmente que los datos que enviemos desde Java se están guardando bien.
 
 ### 3. El puente con nuestro código Java
 Para que Java pueda comunicarse con la base de datos PostgreSQL en la nube, hemos añadido al archivo `pom.xml` la dependencia del **Driver JDBC**. Este driver es simplemente el "traductor" que permite que nuestras clases Java envíen comandos SQL reales a través de internet.
