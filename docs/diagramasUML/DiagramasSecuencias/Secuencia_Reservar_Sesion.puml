@@ -1,0 +1,59 @@
+@startuml
+' Ajustes estéticos para que se vea más limpio
+skinparam maxMessageSize 250
+
+
+' Definición de los participantes (De izquierda a derecha)
+actor Socio as socio
+boundary "Pantalla\nReservas" as vista
+control "Controlador\nReserva" as controlador
+entity "ReservaDAO\n(JDBC)" as dao
+database "Supabase\n(PostgreSQL)" as db
+
+' Inicio de la interacción
+socio -> vista : 1. Selecciona una clase y pulsa "Reservar"
+activate vista
+
+vista -> controlador : 2. solicitarReserva(idSocio, idClase)
+activate controlador
+
+' El controlador verifica primero si hay hueco
+controlador -> dao : 3. comprobarAforoDisponible(idClase)
+activate dao
+
+dao -> db : 4. SELECT COUNT(*) FROM reserva WHERE id_clase = X
+activate db
+db --> dao : 5. Retorna número de reservas actuales
+deactivate db
+
+dao --> controlador : 6. Retorna aforoDisponible (true/false)
+deactivate dao
+
+' Bifurcación lógica (¿Hay sitio o no?)
+alt Si hay aforo disponible
+
+    controlador -> dao : 7. registrarReserva(idSocio, idClase)
+    activate dao
+    
+    dao -> db : 8. INSERT INTO reserva (...)
+    activate db
+    db --> dao : 9. Confirmación de inserción (OK)
+    deactivate db
+    
+    dao --> controlador : 10. Retorna true (Éxito)
+    deactivate dao
+    
+    controlador --> vista : 11. mostrarMensaje("Reserva confirmada")
+    
+else Si NO hay aforo disponible (Clase llena)
+
+    controlador --> vista : 12. mostrarError("La clase está llena")
+    
+end
+
+' Fin de la interacción
+vista --> socio : 13. Visualiza el resultado (OK o Error)
+deactivate controlador
+deactivate vista
+
+@enduml
