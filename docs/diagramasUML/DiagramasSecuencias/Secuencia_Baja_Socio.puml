@@ -1,0 +1,37 @@
+@startuml
+
+
+actor "Gestor" as gestor
+boundary "Pantalla\nGestión Socios" as vista
+control "Controlador\nSocio" as controlador
+entity "SocioDAO" as dao
+database "Supabase" as db
+
+' Inicio del flujo
+gestor -> vista : 1. Selecciona socio y pulsa "Dar de baja"
+activate vista
+
+vista -> gestor : 2. ¿Confirmar eliminación?
+gestor -> vista : 3. Sí, confirmar
+
+
+vista -> controlador : 4. eliminarSocio(idSocio)
+activate controlador
+
+controlador -> dao : 5. borrarSocio(idSocio)
+activate dao
+
+dao -> db : 6. DELETE FROM socio WHERE id = idSocio
+activate db
+db --> dao : 7. Confirmación OK
+deactivate db
+
+dao --> controlador : 8. Retorna true
+deactivate dao
+
+controlador --> vista : 9. actualizarTabla() y mostrarExito()
+vista --> gestor : 10. "Socio eliminado correctamente"
+
+deactivate controlador
+deactivate vista
+@enduml
