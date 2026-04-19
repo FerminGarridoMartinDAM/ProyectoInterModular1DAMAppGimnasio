@@ -1,0 +1,16 @@
+@startuml
+title Ciclo de Vida de una Reserva
+
+[*] --> Pendiente : Socio reserva clase
+
+Pendiente --> Confirmada : Aforo verificado
+Pendiente --> Cancelada : Socio se arrepiente
+
+Confirmada --> Realizada : Socio asiste a clase
+Confirmada --> Cancelada : Cancela antes de 2h
+Confirmada --> Ausente : No asiste sin avisar
+
+Realizada --> [*]
+Cancelada --> [*]
+Ausente --> [*]
+@enduml

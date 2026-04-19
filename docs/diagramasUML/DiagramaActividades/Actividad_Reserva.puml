@@ -1,0 +1,26 @@
+    @startuml
+    title Proceso de Reserva de Sesión
+    
+    start
+    
+    :Seleccionar Clase/Sesión;
+    
+    if (¿Tiene suscripción activa?) then (No)
+      :Mostrar Planes disponibles;
+      :Socio elige y paga Plan;
+    else (Sí)
+    endif
+    
+    :Comprobar Aforo en Base de Datos;
+    
+    if (¿Hay plazas libres?) then (No)
+    :Mostrar mensaje "Sesión Llena"; <<#red>>
+    
+    else (Sí)
+      :Registrar Reserva en Sistema;
+      :Restar 1 al aforo temporal;
+     :Mostrar Confirmación ; <<#green>>
+    endif
+    
+    stop
+    @enduml
