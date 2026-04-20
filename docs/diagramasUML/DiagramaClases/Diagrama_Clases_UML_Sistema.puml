@@ -1,0 +1,144 @@
+@startuml
+
+title Diagrama de Clases de Implementación (Arquitectura Completa)
+
+' --- CAPA DE UTILIDADES Y CONEXIÓN ---
+package "database" {
+    class ConexionDB {
+        + getConexion(): Connection
+    }
+    
+    '--- NOTA ACLARTORIA---
+    note bottom of ConexionDB
+      **Nota de Arquitectura:**
+      Solo he puesto una conexion representativa aqui,
+      para no llenar de lineas.
+      PERO.
+      Todas las implementaciones 
+      DAOPostgresImpl de este sistema 
+      dependen de ConexionDB para 
+      ejecutar sus consultas.
+      
+    end note
+}
+
+package "utils" {
+    class Main {
+        + main(args: String[])
+    }
+}
+
+' --- CAPA DE MODELO (Datos y Lógica de Negocio) ---
+package "model" {
+    abstract class Usuario {
+        # idUsuario: int
+        # nombre: String
+        # apellido: String
+        # email: String
+        # password: String
+        # telefono: String
+        + login(email, pass): boolean
+    }
+
+    class Socio {
+        - fechaAlta: LocalDate
+    }
+
+    class Entrenador {
+        - especialidad: String
+    }
+
+    class Clase {
+        - idClase: int
+        - nombre: String
+        - aforoMax: int
+    }
+
+    class Plan {
+        - idPlan: int
+        - nombre: String
+        - precio: double
+    }
+
+    class Sesion {
+        - idSesion: int
+        - inicio: LocalDateTime
+        - fin: LocalDateTime
+        - sala: String
+    }
+
+    class Suscripcion {
+        - idSuscripcion: int
+        - fechaFin: LocalDate
+    }
+
+    class Reserva {
+        - idReserva: int
+        - fechaReserva: LocalDateTime
+    }
+    
+    ' Herencia
+    Usuario <|-- Socio
+    Usuario <|-- Entrenador
+}
+
+' --- CAPA DE DATOS (DAOs) ---
+package "dao" {
+    interface SocioDAO
+    class SocioDAOPostgresImpl
+    SocioDAO <|.. SocioDAOPostgresImpl
+
+    interface EntrenadorDAO
+    class EntrenadorDAOPostgresImpl
+    EntrenadorDAO <|.. EntrenadorDAOPostgresImpl
+
+    interface ClaseDAO
+    class ClaseDAOPostgresImpl
+    ClaseDAO <|.. ClaseDAOPostgresImpl
+
+    interface PlanDAO
+    class PlanDAOPostgresImpl
+    PlanDAO <|.. PlanDAOPostgresImpl
+
+    interface SesionDAO
+    class SesionDAOPostgresImpl
+    SesionDAO <|.. SesionDAOPostgresImpl
+
+    interface ReservaDAO
+    class ReservaDAOPostgresImpl
+    ReservaDAO <|.. ReservaDAOPostgresImpl
+
+    interface SuscripcionDAO
+    class SuscripcionDAOPostgresImpl
+    SuscripcionDAO <|.. SuscripcionDAOPostgresImpl
+    
+    ' Dependencia de la Base de Datos
+    SocioDAOPostgresImpl ..> ConexionDB : usa >
+}
+
+' --- CAPA DE CONTROL (Menús) ---
+package "controller" {
+    class MenuController
+    class SocioMenu
+    class EntrenadorMenu
+    class ClaseMenu
+    class PlanMenu
+    class SesionMenu
+    class SuscripcionMenu
+    
+    MenuController --> SocioMenu
+    MenuController --> EntrenadorMenu
+    MenuController --> ClaseMenu
+    MenuController --> PlanMenu
+    MenuController --> SesionMenu
+    MenuController --> SuscripcionMenu
+    MenuController --> PeligroMenu
+}
+
+' --- CONEXIONES ENTRE CAPAS (Ejemplo representativo) ---
+Main --> MenuController : inicia >
+SocioMenu ..> SocioDAO : usa >
+SocioDAOPostgresImpl ..> Socio : crea/mapea >
+
+
+@enduml

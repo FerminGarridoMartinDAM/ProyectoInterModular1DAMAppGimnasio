@@ -1,0 +1,19 @@
+@startuml
+title Proceso de Consultar Asistencia (Entrenador)
+
+start
+
+:Acceder a "Mis Sesiones Programadas";
+:Seleccionar una Sesión específica;
+
+:Buscar en la tabla 'reserva' el id de esa sesión;
+:Obtener los datos de los Socios apuntados;
+
+if (¿Hay reservas registradas?) then (No)
+  :Mostrar mensaje "0 asistentes apuntados"; <<#green>>
+else (Sí)
+  :Mostrar lista con nombres de los asistentes; <<#green>>
+endif
+
+stop
+@enduml

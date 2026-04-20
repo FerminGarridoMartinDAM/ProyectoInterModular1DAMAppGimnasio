@@ -1,0 +1,75 @@
+@startuml
+title Secuencia: Gestionar_Suscripcion
+
+' --- PARTICIPANTES ---
+actor Socio
+boundary "MenuSuscripcion" as Vista
+control "SuscripcionController" as Controlador
+entity "SuscripcionDAO" as SuscDAO
+entity "PlanDAO" as PlanDAO
+database "PostgreSQL" as BD
+
+' --- FLUJO DE EJECUCIÓN ---
+Socio -> Vista: Selecciona "Mi Suscripción"
+activate Vista
+
+Vista -> Controlador: consultarEstado(idSocio)
+activate Controlador
+
+' 1. Comprobar si ya tiene suscripción
+Controlador -> SuscDAO: obtenerSuscripcionActiva(idSocio)
+activate SuscDAO
+
+SuscDAO -> BD: SELECT * FROM suscripcion WHERE id_socio = ?
+activate BD
+BD --> SuscDAO: Devuelve suscripción (o nulo)
+deactivate BD
+
+SuscDAO --> Controlador: retorna Objeto Suscripcion
+deactivate SuscDAO
+
+' 2. Bifurcación Lógica (El if/else del sistema)
+alt Tiene suscripción activa
+    Controlador --> Vista: retorna datos de la Suscripción
+    Vista --> Socio: Muestra detalles (Plan, Fecha fin, Estado)
+    
+else No tiene suscripción
+    ' El sistema busca los planes disponibles para ofrecérselos
+    Controlador -> PlanDAO: obtenerPlanesActivos()
+    activate PlanDAO
+    
+    PlanDAO -> BD: SELECT * FROM plan
+    activate BD
+    BD --> PlanDAO: Devuelve lista de planes
+    deactivate BD
+    
+    PlanDAO --> Controlador: retorna Lista<Plan>
+    deactivate PlanDAO
+    
+    Controlador --> Vista: retorna Lista<Plan>
+    Vista --> Socio: Muestra catálogo de Planes
+    
+    ' El socio decide comprar
+    Socio -> Vista: Elige un Plan y realiza el pago
+    Vista -> Controlador: contratarPlan(idSocio, idPlan)
+    
+    ' Se guarda la nueva suscripción
+    Controlador -> SuscDAO: registrarNuevaSuscripcion(idSocio, idPlan)
+    activate SuscDAO
+    
+    SuscDAO -> BD: INSERT INTO suscripcion (...)
+    activate BD
+    BD --> SuscDAO: Confirmación (1 fila afectada)
+    deactivate BD
+    
+    SuscDAO --> Controlador: retorna true
+    deactivate SuscDAO
+    
+    Controlador --> Vista: retorna confirmación_OK
+    Vista --> Socio: Muestra "Pago realizado y Plan activado"
+end
+
+deactivate Controlador
+deactivate Vista
+
+@enduml

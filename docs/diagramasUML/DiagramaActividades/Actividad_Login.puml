@@ -1,0 +1,17 @@
+@startuml
+title Proceso de Iniciar Sesión (Login)
+
+start
+
+:Introducir Email y Contraseña;
+:Buscar usuario en Base de Datos;
+
+if (¿Credenciales correctas?) then (No)
+  :Mostrar error "Usuario o contraseña incorrectos"; <<#red>>
+else (Sí)
+  :Generar sesión de usuario (Socio o Entrenador);
+  :Redirigir al Menú Principal; <<#green>>
+endif
+
+stop
+@enduml

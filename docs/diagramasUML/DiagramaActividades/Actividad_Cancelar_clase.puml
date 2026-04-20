@@ -1,0 +1,16 @@
+@startuml
+title Proceso de Cancelar Reserva (Socio)
+
+start
+
+:Acceder a "Mis Reservas";
+:Seleccionar reserva a cancelar;
+:Confirmar cancelación;
+
+:Eliminar registro de la tabla 'reserva';
+:Sumar 1 plaza al aforo temporal de la sesión;
+
+:Mostrar mensaje "Reserva Cancelada con éxito"; <<#green>>
+
+stop
+@enduml

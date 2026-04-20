@@ -1,0 +1,23 @@
+@startuml
+
+
+title Proceso de Programar Sesión (Entrenador)
+
+start
+
+:Seleccionar opción "Nueva Sesión";
+:Elegir Clase del catálogo (ej. Yoga, CrossFit);
+:Asignar Fecha, Hora de Inicio/Fin y Sala;
+
+:Consultar Base de Datos (Horarios);
+
+if (¿El entrenador o la sala están ocupados a esa hora?) then (Sí)
+  :Mostrar error "Conflicto de Horario o Sala"; <<#red>>
+else (No)
+  :Generar nuevo ID de Sesión;
+  :Registrar Sesión en Base de Datos;
+  :Mostrar Confirmación "Sesión Creada"; <<#green>>
+endif
+
+stop
+@enduml

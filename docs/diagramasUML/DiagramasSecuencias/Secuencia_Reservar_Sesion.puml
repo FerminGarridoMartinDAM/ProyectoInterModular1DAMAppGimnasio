@@ -1,59 +1,87 @@
 @startuml
-' Ajustes estéticos para que se vea más limpio
-skinparam maxMessageSize 250
+title Secuencia: Reservar_Sesion
 
+' --- PARTICIPANTES ---
+actor Socio
+boundary "MenuReserva" as Vista
+control "ReservaController" as Controlador
+entity "SuscripcionDAO" as SuscDAO
+entity "SesionDAO" as SesionDAO
+entity "ReservaDAO" as ResDAO
+database "PostgreSQL" as BD
 
-' Definición de los participantes (De izquierda a derecha)
-actor Socio as socio
-boundary "Pantalla\nReservas" as vista
-control "Controlador\nReserva" as controlador
-entity "ReservaDAO\n(JDBC)" as dao
-database "Supabase\n(PostgreSQL)" as db
+' --- FLUJO 1: Mostrar Catálogo ---
+Socio -> Vista: Selecciona "Reservar Sesión"
+activate Vista
 
-' Inicio de la interacción
-socio -> vista : 1. Selecciona una clase y pulsa "Reservar"
-activate vista
+Vista -> Controlador: obtenerSesionesDisponibles()
+activate Controlador
 
-vista -> controlador : 2. solicitarReserva(idSocio, idClase)
-activate controlador
+Controlador -> SesionDAO: consultarSesionesActivas()
+activate SesionDAO
+SesionDAO -> BD: SELECT * FROM sesion
+activate BD
+BD --> SesionDAO: Devuelve horarios
+deactivate BD
+SesionDAO --> Controlador: retorna Lista<Sesion>
+deactivate SesionDAO
 
-' El controlador verifica primero si hay hueco
-controlador -> dao : 3. comprobarAforoDisponible(idClase)
-activate dao
+Controlador --> Vista: retorna Lista<Sesion>
+deactivate Controlador
 
-dao -> db : 4. SELECT COUNT(*) FROM reserva WHERE id_clase = X
-activate db
-db --> dao : 5. Retorna número de reservas actuales
-deactivate db
+Vista --> Socio: Muestra calendario de clases
 
-dao --> controlador : 6. Retorna aforoDisponible (true/false)
-deactivate dao
+' --- FLUJO 2: Proceso de Reserva ---
+Socio -> Vista: Elige una sesión concreta
+Vista -> Controlador: procesarReserva(idSocio, idSesion)
+activate Controlador
 
-' Bifurcación lógica (¿Hay sitio o no?)
-alt Si hay aforo disponible
+' Validación 1: Suscripción
+Controlador -> SuscDAO: verificarSuscripcionActiva(idSocio)
+activate SuscDAO
+SuscDAO -> BD: SELECT estado FROM suscripcion WHERE id_socio = ?
+activate BD
+BD --> SuscDAO: Devuelve estado
+deactivate BD
+SuscDAO --> Controlador: retorna boolean
+deactivate SuscDAO
 
-    controlador -> dao : 7. registrarReserva(idSocio, idClase)
-    activate dao
-    
-    dao -> db : 8. INSERT INTO reserva (...)
-    activate db
-    db --> dao : 9. Confirmación de inserción (OK)
-    deactivate db
-    
-    dao --> controlador : 10. Retorna true (Éxito)
-    deactivate dao
-    
-    controlador --> vista : 11. mostrarMensaje("Reserva confirmada")
-    
-else Si NO hay aforo disponible (Clase llena)
+alt No tiene suscripción activa
+    Controlador --> Vista: retorna error_suscripcion
+    Vista --> Socio: Muestra "Error: Necesita contratar un Plan"
 
-    controlador --> vista : 12. mostrarError("La clase está llena")
-    
+else Sí tiene suscripción activa
+    ' Validación 2: Aforo
+    Controlador -> SesionDAO: comprobarAforoLibre(idSesion)
+    activate SesionDAO
+    SesionDAO -> BD: SELECT aforo_max - ocupados FROM sesion...
+    activate BD
+    BD --> SesionDAO: Devuelve plazas libres
+    deactivate BD
+    SesionDAO --> Controlador: retorna boolean
+    deactivate SesionDAO
+
+    alt Sin plazas libres
+        Controlador --> Vista: retorna error_aforo
+        Vista --> Socio: Muestra "Error: La sesión está completa"
+        
+    else Hay plazas libres
+        ' Inserción final
+        Controlador -> ResDAO: registrarReserva(idSocio, idSesion)
+        activate ResDAO
+        ResDAO -> BD: INSERT INTO reserva (...)
+        activate BD
+        BD --> ResDAO: Confirmación (1 fila afectada)
+        deactivate BD
+        ResDAO --> Controlador: retorna true
+        deactivate ResDAO
+        
+        Controlador --> Vista: retorna confirmacion_OK
+        Vista --> Socio: Muestra "Reserva Confirmada con éxito"
+    end
 end
 
-' Fin de la interacción
-vista --> socio : 13. Visualiza el resultado (OK o Error)
-deactivate controlador
-deactivate vista
+deactivate Controlador
+deactivate Vista
 
 @enduml

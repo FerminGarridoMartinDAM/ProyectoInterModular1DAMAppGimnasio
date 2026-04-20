@@ -1,0 +1,20 @@
+@startuml
+title Proceso de Crear Nueva Clase (Entrenador)
+
+start
+
+:Acceder a "Gestión de Clases";
+:Seleccionar "Añadir Nueva Clase";
+:Introducir Nombre y Aforo Máximo;
+
+:Comprobar en Base de Datos;
+
+if (¿El nombre de la clase ya existe?) then (Sí)
+  :Mostrar error "Esta clase ya está registrada"; <<#red>>
+else (No)
+  :Registrar Clase en Base de Datos;
+  :Mostrar Confirmación "Clase Creada"; <<#green>>
+endif
+
+stop
+@enduml

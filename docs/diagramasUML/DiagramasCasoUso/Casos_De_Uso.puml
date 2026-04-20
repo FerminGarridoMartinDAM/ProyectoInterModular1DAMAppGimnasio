@@ -1,69 +1,42 @@
 @startuml
 left to right direction
 
-' 1. Definición de los actores
-actor "Administrador (Dueño)" as admin
-actor "Gestor (Recepción)" as gestor
-actor "Socio" as socio
-actor "Entrenador" as entrenador
+' --- ACTORES ---
+actor "Socio" as Socio
+actor "Entrenador" as Entrenador
 
-' Jerarquía de herencia: El Admin hereda de Gestor y Socio (Modo Dios).
-' El Gestor hereda de Entrenador.
-admin --|> gestor
-admin --|> socio
-gestor --|> entrenador
+' --- SISTEMA (Frontera) ---
+rectangle "App Gimnasio" {
+  
+  ' Funciones Comunes (Heredadas de Usuario)
+  usecase "Iniciar Sesión (Login)" as Login
 
-rectangle "Sistema de Gestión Gym" {
-  
-  ' Funciones de Cliente
-  usecase "Ver Planes" as UC1
-  usecase "Suscripción" as UC2
-  usecase "Ver Horarios" as UC3 
-  usecase "Reservar Sesión" as UC4
-  usecase "Cancelar Reserva" as UC5
-  
-  ' Funciones de Operaciones (Entrenador)
-  usecase "Consultar Asistencia" as UC6
-  usecase "Registrar Sesión" as UC7
-  
-  ' Funciones de Administración (Gestor)
-  usecase "Alta Socio" as UC8
-  usecase "Alta Entrenador" as UC9
-  usecase "Modificar Datos Socio" as UC10
-  usecase "Gestionar Reservas Manualmente" as UC11
-  usecase "Configurar Planes y Precios" as UC12
-  
-  ' Funciones de Negocio (Admin)
-  usecase "Ver Informes Financieros" as UC13
-  usecase "Gestionar Permisos de Roles" as UC14
+  ' Funciones del Socio
+  usecase "Consultar su Suscripción" as VerSuscripcion
+  usecase "Ver Horario de Sesiones" as VerHorario
+  usecase "Realizar Reserva" as Reservar
+  usecase "Cancelar Reserva" as Cancelar
+
+  ' Funciones del Entrenador (Modo Gestión)
+  usecase "Gestionar Clases (Catálogo)" as GestClases
+  usecase "Programar Sesiones" as ProgSesiones
+  usecase "Consultar Asistencia de Reservas" as VerAsistencia
 }
 
-' Relaciones del Socio
-socio --> UC1
-socio --> UC2
-socio --> UC3
-socio --> UC4
-socio --> UC5
+' --- CONEXIONES ---
+' Ambos actores necesitan hacer login
+Socio --> Login
+Entrenador --> Login
 
-' Relaciones del Entrenador
-entrenador --> UC3
-entrenador --> UC6
-entrenador --> UC7
+' Acciones específicas del Socio
+Socio --> VerSuscripcion
+Socio --> VerHorario
+Socio --> Reservar
+Socio --> Cancelar
 
-' Relaciones específicas del Gestor 
-' Hereda UC3, UC6, UC7 automáticamente. 
-' Se vincula a UC4/UC5 para ayudar al socio y al resto para su gestión diaria.
-gestor --> UC4
-gestor --> UC5
-gestor --> UC8
-gestor --> UC9
-gestor --> UC10
-gestor --> UC11
-gestor --> UC12
-
-' Relaciones del Administrador
-' Hereda todo lo anterior de Gestor y Socio. Solo añadimos sus funciones exclusivas.
-admin --> UC13
-admin --> UC14
+' Acciones específicas del Entrenador
+Entrenador --> GestClases
+Entrenador --> ProgSesiones
+Entrenador --> VerAsistencia
 
 @enduml

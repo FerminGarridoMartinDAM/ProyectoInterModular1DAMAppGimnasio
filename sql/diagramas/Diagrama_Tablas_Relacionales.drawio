@@ -115,7 +115,7 @@
             <mxRectangle height="30" width="50" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="XYSMOoCd4-Dx-mDFlTR5-106" parent="XYSMOoCd4-Dx-mDFlTR5-104" style="shape=partialRectangle;overflow=hidden;connectable=0;fillColor=none;align=left;strokeColor=inherit;top=0;left=0;bottom=0;right=0;spacingLeft=6;labelBorderColor=none;backgroundOutline=1;" value="FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)." vertex="1">
+        <mxCell id="XYSMOoCd4-Dx-mDFlTR5-106" parent="XYSMOoCd4-Dx-mDFlTR5-104" style="shape=partialRectangle;overflow=hidden;connectable=0;fillColor=none;align=left;strokeColor=inherit;top=0;left=0;bottom=0;right=0;spacingLeft=6;labelBorderColor=none;backgroundOutline=1;" value="  fecha_alta DATE NOT NULL&#xa;" vertex="1">
           <mxGeometry height="30" width="360" x="50" as="geometry">
             <mxRectangle height="30" width="360" as="alternateBounds" />
           </mxGeometry>

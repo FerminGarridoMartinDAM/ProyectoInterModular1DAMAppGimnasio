@@ -1,0 +1,19 @@
+@startuml
+title Proceso de Gestión de Suscripción (Socio)
+
+start
+
+:Acceder a "Mi Suscripción";
+:Consultar estado en Base de Datos;
+
+if (¿Tiene suscripción activa?) then (Sí)
+  :Mostrar detalles (Plan y Fecha límite); <<#green>>
+else (No)
+  :Mostrar catálogo de Planes;
+  :Seleccionar Plan e introducir datos de pago;
+  :Registrar nueva suscripción en Base de Datos;
+  :Mostrar Confirmación de Pago; <<#green>>
+endif
+
+stop
+@enduml

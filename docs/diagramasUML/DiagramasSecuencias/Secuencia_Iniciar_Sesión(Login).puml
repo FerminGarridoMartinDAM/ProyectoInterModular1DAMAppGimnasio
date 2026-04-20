@@ -1,0 +1,42 @@
+@startuml
+title Secuencia: Iniciar Sesión (Login)
+
+' --- PARTICIPANTES ---
+actor Usuario
+boundary "MenuLogin" as Vista
+control "LoginController" as Controlador
+entity "UsuarioDAO" as DAO
+database "PostgreSQL" as BD
+
+' --- FLUJO DE EJECUCIÓN ---
+Usuario -> Vista: Introduce email y contraseña
+activate Vista
+
+Vista -> Controlador: autenticarUsuario(email, password)
+activate Controlador
+
+' El controlador delega en el DAO la búsqueda en base de datos
+Controlador -> DAO: obtenerUsuarioPorEmail(email)
+activate DAO
+
+DAO -> BD: SELECT * FROM usuario WHERE email = ?
+activate BD
+BD --> DAO: Devuelve registro (o vacío si no existe)
+deactivate BD
+
+DAO --> Controlador: retorna Objeto Usuario (con su password_hash)
+deactivate DAO
+
+' El controlador toma la decisión lógica
+alt Credenciales correctas (coincide el hash)
+    Controlador --> Vista: retorna true (Login OK)
+    Vista --> Usuario: Muestra "Bienvenido" y abre Menú Principal
+else Credenciales incorrectas o email no existe
+    Controlador --> Vista: retorna false (Login Fallido)
+    Vista --> Usuario: Muestra error "Credenciales incorrectas"
+end
+
+deactivate Controlador
+deactivate Vista
+
+@enduml
