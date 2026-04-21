@@ -14,7 +14,7 @@ DROP TABLE IF EXISTS plan CASCADE;
 DROP TABLE IF EXISTS socio CASCADE;
 DROP TABLE IF EXISTS entrenador CASCADE;
 DROP TABLE IF EXISTS usuario CASCADE;
-
+DROP TABLE IF EXISTS secretario CASCADE;
 
 
 -- ==============================================================================
@@ -41,6 +41,12 @@ CREATE TABLE socio (
 CREATE TABLE entrenador (
     id_usuario INT PRIMARY KEY,
     especialidad VARCHAR(50),
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE
+);
+
+CREATE TABLE secretario (
+    id_usuario INT PRIMARY KEY,
+    turno VARCHAR(50),
     FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE
 );
 

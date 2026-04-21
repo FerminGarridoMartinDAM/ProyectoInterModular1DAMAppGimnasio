@@ -1,42 +1,62 @@
 @startuml
-left to right direction
 
-' --- ACTORES ---
+title Diagrama de Casos de Uso - Gimnasio APP
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle hollow
+
+' --- DEFINICIÓN DE ACTORES ---
+actor "Usuario\n(General)" as Usuario
 actor "Socio" as Socio
 actor "Entrenador" as Entrenador
+actor "Secretario\n(Administración)" as Secretario
 
-' --- SISTEMA (Frontera) ---
-rectangle "App Gimnasio" {
-  
-  ' Funciones Comunes (Heredadas de Usuario)
-  usecase "Iniciar Sesión (Login)" as Login
+' Herencia de actores: Socio, Entrenador y Secretario son tipos de Usuario
+Socio -up-|> Usuario
+Entrenador -up-|> Usuario
+Secretario -up-|> Usuario
 
-  ' Funciones del Socio
-  usecase "Consultar su Suscripción" as VerSuscripcion
-  usecase "Ver Horario de Sesiones" as VerHorario
-  usecase "Realizar Reserva" as Reservar
-  usecase "Cancelar Reserva" as Cancelar
-
-  ' Funciones del Entrenador (Modo Gestión)
-  usecase "Gestionar Clases (Catálogo)" as GestClases
-  usecase "Programar Sesiones" as ProgSesiones
-  usecase "Consultar Asistencia de Reservas" as VerAsistencia
+' --- SISTEMA Y CASOS DE USO ---
+package "Sistema Gimnasio APP" {
+    
+    ' Casos de uso generales
+    usecase "Iniciar Sesión" as UC_Login
+    usecase "Cerrar Sesión" as UC_Logout
+    
+    ' Casos de uso de Socio
+    usecase "Reservar Sesión/Clase" as UC_Reservar
+    usecase "Consultar Suscripción Activa" as UC_VerSuscripcion
+    
+    ' Casos de uso de Entrenador
+    usecase "Consultar Horario de Clases" as UC_VerHorario
+    usecase "Ver Lista de Asistentes" as UC_VerAsistentes
+    
+    ' Casos de uso de Secretario (Las novedades)
+    usecase "Gestionar Socios\n(Altas, Bajas, Modificaciones)" as UC_GestSocio
+    usecase "Gestionar Entrenadores\n(Altas, Bajas, Especialidades)" as UC_GestEntrenador
+    usecase "Administrar Planes de Precios\n(Crear, Editar Tarifas)" as UC_GestPlanes
+    usecase "Gestionar Copias de Seguridad\n(JSON)" as UC_Backup
 }
 
-' --- CONEXIONES ---
-' Ambos actores necesitan hacer login
-Socio --> Login
-Entrenador --> Login
+' --- RELACIONES ---
+
+' Todos los usuarios pueden loguearse
+Usuario --> UC_Login
+Usuario --> UC_Logout
 
 ' Acciones específicas del Socio
-Socio --> VerSuscripcion
-Socio --> VerHorario
-Socio --> Reservar
-Socio --> Cancelar
+Socio --> UC_Reservar
+Socio --> UC_VerSuscripcion
 
 ' Acciones específicas del Entrenador
-Entrenador --> GestClases
-Entrenador --> ProgSesiones
-Entrenador --> VerAsistencia
+Entrenador --> UC_VerHorario
+Entrenador --> UC_VerAsistentes
+
+' Acciones específicas del Secretario (Administración total)
+Secretario --> UC_GestSocio
+Secretario --> UC_GestEntrenador
+Secretario --> UC_GestPlanes
+Secretario --> UC_Backup
 
 @enduml
