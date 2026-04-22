@@ -26,7 +26,8 @@ Para construir este proyecto he utilizado:
 Para facilitar la corrección del proyecto intermodular, el repositorio está dividido así:
 
 - /src: Código fuente de la aplicación (Programación y Ampliación de Programación).
-- /sql: Scripts de creación y diagramas de la base de datos (Bases de Datos).
+- /sql: Scripts de creación y diagramas de la base de datos(E-R, relacional, Supabase) (Bases de Datos).
 - /xml: Archivos de datos estructurados (Lenguajes de Marcas).
+- /docs/diagramasUML: Diagramas de actividades, clases, estados, casos de uso, secuencias.
 - /docs/sistemas: Informe técnico del entorno (Sistemas Informáticos).
 - /docs/empleabilidad: Perfil profesional y portfolio (IPE).
