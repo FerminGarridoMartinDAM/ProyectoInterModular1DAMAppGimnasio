@@ -1,19 +1,19 @@
-@startuml
-title Proceso de Crear Nueva Clase (Entrenador)
+title Proceso de Añadir Nueva Clase al Catálogo (Secretario)
 
 start
 
-:Acceder a "Gestión de Clases";
-:Seleccionar "Añadir Nueva Clase";
-:Introducir Nombre y Aforo Máximo;
+:Acceder a "Gestión del Catálogo";
+:Seleccionar "Añadir Nueva Actividad";
+note right: Ejemplo: "Zumba", "Spinning"
+:Introducir Nombre y Aforo Base;
 
-:Comprobar en Base de Datos;
-
-if (¿El nombre de la clase ya existe?) then (Sí)
-  :Mostrar error "Esta clase ya está registrada"; <<#red>>
+if (¿El nombre ya existe en el catálogo?) then (Sí)
+  :Mostrar error "Actividad ya registrada"; <<#red>>
+  
 else (No)
-  :Registrar Clase en Base de Datos;
-  :Mostrar Confirmación "Clase Creada"; <<#green>>
+  :Generar nuevo id_clase;
+  :INSERT en tabla 'clase';
+  :Confirmar "Actividad añadida con éxito"; <<#green>>
 endif
 
 stop

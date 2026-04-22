@@ -1,0 +1,18 @@
+@startuml
+title Proceso de Administración de Planes (Secretario)
+
+start
+
+:Acceder a "Gestión de Planes y Precios";
+:Seleccionar "Crear Nuevo Plan";
+:Introducir Nombre (ej. "Mensual VIP") y Precio;
+
+if (¿El nombre del plan ya existe?) then (Sí)
+  :Mostrar error "Ese plan ya existe"; <<#red>>
+else (No)
+  :Guardar el nuevo Plan en el sistema;
+  :Mostrar mensaje "Plan creado y disponible para socios"; <<#green>>
+endif
+
+stop
+@enduml

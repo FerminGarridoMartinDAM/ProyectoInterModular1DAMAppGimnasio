@@ -1,0 +1,20 @@
+@startuml
+title Proceso de Alta de Usuario (Secretario)
+
+start
+
+:Acceder a "Gestión de Socios/Entrenadores";
+:Seleccionar "Nuevo Alta";
+:Introducir Datos Personales (Nombre, Email, etc.);
+
+:El sistema comprueba los registros;
+
+if (¿El correo electrónico ya está en uso?) then (Sí)
+  :Mostrar aviso "Este correo ya está registrado"; <<#red>>
+else (No)
+  :Guardar el nuevo perfil (como Socio o Entrenador);
+  :Mostrar mensaje "Alta completada con éxito"; <<#green>>
+endif
+
+stop
+@enduml

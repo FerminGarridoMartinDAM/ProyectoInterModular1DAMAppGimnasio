@@ -1,0 +1,19 @@
+@startuml
+title Proceso de Cancelar Sesión (Entrenador / Secretario)
+
+start
+
+:Identificar Sesión en el Horario;
+:Solicitar Cancelación;
+
+if (¿Existen Reservas activas?) then (Sí)
+  :Notificar automáticamente a los Socios;
+  :Eliminar registros en tabla 'reserva';
+else (No)
+endif
+
+:Eliminar registro en tabla 'sesion';
+:Confirmar "Sesión eliminada y horario actualizado"; <<#green>>
+
+stop
+@enduml

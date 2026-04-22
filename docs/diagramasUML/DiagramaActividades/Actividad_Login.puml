@@ -9,7 +9,7 @@ start
 if (¿Credenciales correctas?) then (No)
   :Mostrar error "Usuario o contraseña incorrectos"; <<#red>>
 else (Sí)
-  :Generar sesión de usuario (Socio o Entrenador);
+  :Generar sesión de usuario (Socio , Entrenador o Secretario);
   :Redirigir al Menú Principal; <<#green>>
 endif
 

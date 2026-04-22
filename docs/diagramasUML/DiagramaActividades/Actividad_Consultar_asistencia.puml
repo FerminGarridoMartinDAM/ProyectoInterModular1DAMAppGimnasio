@@ -1,9 +1,9 @@
 @startuml
-title Proceso de Consultar Asistencia (Entrenador)
+title Proceso de Consultar Asistencia (Entrenador,Secretario)
 
 start
 
-:Acceder a "Mis Sesiones Programadas";
+:Acceder a "Sesiones Programadas";
 :Seleccionar una Sesión específica;
 
 :Buscar en la tabla 'reserva' el id de esa sesión;
