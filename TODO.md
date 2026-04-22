@@ -1,9 +1,10 @@
-# 📋 Tareas Pendientes - Gimnasio APP
+# 📋 Tareas Pendientes para Mañana
 
-## Documentación y Base de Datos
-- [ ] Actualizar el Diagrama Entidad-Relación (E-R) con la tabla Secretario.
-- [ ] Actualizar el modelo Relacional de Tablas.
+- [ ] **Terminar los diagramas UML restantes.**
+- [ ] **Completar documentacion de UML**
 
-## Código
-- [ ] Implementar el primer `SELECT` en `SocioDAOPostgresImpl`.
-- [ ] Terminar la lógica del `SecretarioController`.
+*(Tipos de diagramas UML pendientes por diseñar):*
+
+- [ ] **Diagrama de Clases (Estructural):** 
+- [ ] **Diagramas de Secuencia (Interacción):** 
+- [ ] **Diagrama de Estados (Comportamiento):** 
