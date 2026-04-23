@@ -1,0 +1,45 @@
+@startuml
+title Diagrama de Secuencia: Generar Backup JSON - Gym APP
+
+autonumber
+actor "Secretario" as User
+boundary "PanelAdmin\n(Vista)" as Vista
+control "BackupController\n(Controlador)" as Controller
+participant "BackupUtils\n(Librería JSON)" as Utils
+participant "SocioDAO\n(Capa DAO)" as DAO
+database "Supabase\n(PostgreSQL)" as DB
+
+User -> Vista : Clic en "Generar Copia Seguridad"
+activate Vista
+
+Vista -> Controller : generarBackup()
+activate Controller
+
+Controller -> DAO : listar()
+activate DAO
+DAO -> DB : SELECT * FROM socio
+activate DB
+DB --> DAO : ResultSet
+deactivate DB
+DAO --> Controller : List<Socio>
+deactivate DAO
+
+Controller -> Utils : exportarAJson(List<Socio>, rutaArchivo)
+activate Utils
+
+Utils -> Utils : Convertir objetos a formato texto
+Utils -> Utils : Crear archivo .json en disco duro
+
+alt Guardado Correcto
+    Utils --> Controller : true
+    deactivate Utils
+    Controller -[#green]-> Vista : <color:green>Mostrar "Copia de seguridad completada"</color>
+else Error de Permisos/Disco
+    Utils --> Controller : false
+    Controller -[#red]-> Vista : <color:red>Mostrar "Fallo al escribir en el disco"</color>
+end
+
+deactivate Controller
+deactivate Vista
+
+@enduml

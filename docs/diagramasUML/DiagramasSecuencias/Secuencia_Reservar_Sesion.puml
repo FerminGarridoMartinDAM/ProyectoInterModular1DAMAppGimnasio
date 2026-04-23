@@ -1,87 +1,58 @@
 @startuml
-title Secuencia: Reservar_Sesion
+title Diagrama de Secuencia: Hacer una Reserva - Gym APP
 
-' --- PARTICIPANTES ---
-actor Socio
-boundary "MenuReserva" as Vista
-control "ReservaController" as Controlador
-entity "SuscripcionDAO" as SuscDAO
-entity "SesionDAO" as SesionDAO
-entity "ReservaDAO" as ResDAO
-database "PostgreSQL" as BD
+autonumber
+actor "Socio" as User
+boundary "PantallaReserva\n(Vista)" as Vista
+control "ReservaController\n(Controlador)" as Controller
+participant "SuscripcionDAO\n(Capa DAO)" as SuscDAO
+participant "ReservaDAO\n(Capa DAO)" as ResDAO
+database "Supabase\n(PostgreSQL)" as DB
 
-' --- FLUJO 1: Mostrar Catálogo ---
-Socio -> Vista: Selecciona "Reservar Sesión"
+User -> Vista : Clic en "Reservar" (idSesion)
 activate Vista
 
-Vista -> Controlador: obtenerSesionesDisponibles()
-activate Controlador
+Vista -> Controller : procesarReserva(idSocio, idSesion)
+activate Controller
 
-Controlador -> SesionDAO: consultarSesionesActivas()
-activate SesionDAO
-SesionDAO -> BD: SELECT * FROM sesion
-activate BD
-BD --> SesionDAO: Devuelve horarios
-deactivate BD
-SesionDAO --> Controlador: retorna Lista<Sesion>
-deactivate SesionDAO
-
-Controlador --> Vista: retorna Lista<Sesion>
-deactivate Controlador
-
-Vista --> Socio: Muestra calendario de clases
-
-' --- FLUJO 2: Proceso de Reserva ---
-Socio -> Vista: Elige una sesión concreta
-Vista -> Controlador: procesarReserva(idSocio, idSesion)
-activate Controlador
-
-' Validación 1: Suscripción
-Controlador -> SuscDAO: verificarSuscripcionActiva(idSocio)
+' --- 1. FILTRO DE PREVENCIÓN: ¿Ha pagado el socio? ---
+Controller -> SuscDAO : consultarActiva(idSocio)
 activate SuscDAO
-SuscDAO -> BD: SELECT estado FROM suscripcion WHERE id_socio = ?
-activate BD
-BD --> SuscDAO: Devuelve estado
-deactivate BD
-SuscDAO --> Controlador: retorna boolean
+SuscDAO -> DB : SELECT * FROM suscripcion WHERE id_socio=? AND fecha_fin >= HOY
+activate DB
+DB --> SuscDAO : Retorna Suscripcion (o vacío)
+deactivate DB
+SuscDAO --> Controller : Objeto Suscripcion (o null)
 deactivate SuscDAO
 
-alt No tiene suscripción activa
-    Controlador --> Vista: retorna error_suscripcion
-    Vista --> Socio: Muestra "Error: Necesita contratar un Plan"
+alt Sin suscripción activa
+    Controller -[#red]-> Vista : <color:red>Mostrar error "Debes contratar un plan activo"</color>
+else Suscripción válida
 
-else Sí tiene suscripción activa
-    ' Validación 2: Aforo
-    Controlador -> SesionDAO: comprobarAforoLibre(idSesion)
-    activate SesionDAO
-    SesionDAO -> BD: SELECT aforo_max - ocupados FROM sesion...
-    activate BD
-    BD --> SesionDAO: Devuelve plazas libres
-    deactivate BD
-    SesionDAO --> Controlador: retorna boolean
-    deactivate SesionDAO
+    ' --- 2. FILTRO DE AFORO: ¿Hay hueco en la clase? ---
+    Controller -> ResDAO : listarPorSesion(idSesion)
+    activate ResDAO
+    ResDAO -> DB : SELECT * FROM reserva WHERE id_sesion=?
+    activate DB
+    DB --> ResDAO : Lista de registros
+    deactivate DB
+    ResDAO --> Controller : List<Reserva> (Ej: lista de 15 personas)
+    deactivate ResDAO
 
-    alt Sin plazas libres
-        Controlador --> Vista: retorna error_aforo
-        Vista --> Socio: Muestra "Error: La sesión está completa"
-        
-    else Hay plazas libres
-        ' Inserción final
-        Controlador -> ResDAO: registrarReserva(idSocio, idSesion)
-        activate ResDAO
-        ResDAO -> BD: INSERT INTO reserva (...)
-        activate BD
-        BD --> ResDAO: Confirmación (1 fila afectada)
-        deactivate BD
-        ResDAO --> Controlador: retorna true
-        deactivate ResDAO
-        
-        Controlador --> Vista: retorna confirmacion_OK
-        Vista --> Socio: Muestra "Reserva Confirmada con éxito"
+    Controller -> Controller : Comprobar: (tamaño de la lista < aforoMax)
+
+    alt Aforo Lleno
+        Controller -[#orange]-> Vista : <color:orange>Mostrar error "La clase está completa"</color>
+    else Hay Plazas Disponibles
+
+        ' --- 3. INSERCIÓN: Todo correcto, guardamos la reserva ---
+        Controller -[#green]-> Vista : <color:green>Mostrar mensaje "Reserva confirmada con éxito"</color>
+
+
     end
 end
 
-deactivate Controlador
+deactivate Controller
 deactivate Vista
 
 @enduml

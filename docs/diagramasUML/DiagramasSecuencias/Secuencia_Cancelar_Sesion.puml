@@ -1,0 +1,36 @@
+@startuml
+title Diagrama de Secuencia: Cancelar Sesión - Gym APP
+
+autonumber
+actor "Staff\n(Entrenador/Secretario)" as User
+boundary "Agenda\n(Vista)" as Vista
+control "SesionController\n(Controlador)" as Controller
+participant "SesionDAO\n(Capa DAO)" as DAO
+database "Supabase\n(PostgreSQL)" as DB
+
+User -> Vista : Clic en "Cancelar Clase" (idSesion)
+activate Vista
+
+Vista -> Controller : cancelarSesion(idSesion)
+activate Controller
+
+Controller -> DAO : eliminar(idSesion)
+activate DAO
+
+DAO -> DB : DELETE FROM sesion WHERE id_sesion=?
+activate DB
+DB --> DAO : true
+deactivate DB
+
+DAO --> Controller : true
+deactivate DAO
+
+alt Borrado Exitoso
+    Controller -[#green]-> Vista : <color:green>Mostrar "Sesión cancelada y eliminada del horario"</color>
+else Error al borrar
+    Controller -[#red]-> Vista : <color:red>Mostrar "Error al cancelar la sesión"</color>
+end
+
+deactivate Controller
+deactivate Vista
+@enduml

@@ -1,75 +1,77 @@
 @startuml
-title Secuencia: Gestionar_Suscripcion
+title Diagrama de Secuencia: Gestionar Suscripción - Gym APP
+
+autonumber
 
 ' --- PARTICIPANTES ---
-actor Socio
+actor "Socio" as User
 boundary "MenuSuscripcion" as Vista
-control "SuscripcionController" as Controlador
-entity "SuscripcionDAO" as SuscDAO
-entity "PlanDAO" as PlanDAO
-database "PostgreSQL" as BD
+control "SuscripcionController" as Controller
+participant "SuscripcionDAO" as SuscDAO
+participant "PlanDAO" as PlanDAO
+database "Supabase\n(PostgreSQL)" as DB
 
 ' --- FLUJO DE EJECUCIÓN ---
-Socio -> Vista: Selecciona "Mi Suscripción"
+User -> Vista: Selecciona "Mi Suscripción"
 activate Vista
 
-Vista -> Controlador: consultarEstado(idSocio)
-activate Controlador
+Vista -> Controller: consultarEstado(idSocio)
+activate Controller
 
 ' 1. Comprobar si ya tiene suscripción
-Controlador -> SuscDAO: obtenerSuscripcionActiva(idSocio)
+Controller -> SuscDAO: obtenerSuscripcionActiva(idSocio)
 activate SuscDAO
 
-SuscDAO -> BD: SELECT * FROM suscripcion WHERE id_socio = ?
-activate BD
-BD --> SuscDAO: Devuelve suscripción (o nulo)
-deactivate BD
+SuscDAO -> DB: SELECT * FROM suscripcion WHERE id_socio = ?
+activate DB
+DB --> SuscDAO: Devuelve suscripción (o nulo)
+deactivate DB
 
-SuscDAO --> Controlador: retorna Objeto Suscripcion
+SuscDAO --> Controller: retorna Objeto Suscripcion
 deactivate SuscDAO
 
-' 2. Bifurcación Lógica (El if/else del sistema)
+' 2. Bifurcación Lógica
 alt Tiene suscripción activa
-    Controlador --> Vista: retorna datos de la Suscripción
-    Vista --> Socio: Muestra detalles (Plan, Fecha fin, Estado)
+    Controller -[#green]-> Vista: <color:green>retorna datos de la Suscripción</color>
+    Vista --> User: Muestra detalles (Plan, Fecha fin, Estado)
     
 else No tiene suscripción
     ' El sistema busca los planes disponibles para ofrecérselos
-    Controlador -> PlanDAO: obtenerPlanesActivos()
+    Controller -> PlanDAO: obtenerPlanesActivos()
     activate PlanDAO
     
-    PlanDAO -> BD: SELECT * FROM plan
-    activate BD
-    BD --> PlanDAO: Devuelve lista de planes
-    deactivate BD
+    PlanDAO -> DB: SELECT * FROM plan
+    activate DB
+    DB --> PlanDAO: Devuelve lista de planes
+    deactivate DB
     
-    PlanDAO --> Controlador: retorna Lista<Plan>
+    PlanDAO --> Controller: retorna Lista<Plan>
     deactivate PlanDAO
     
-    Controlador --> Vista: retorna Lista<Plan>
-    Vista --> Socio: Muestra catálogo de Planes
+    Controller -[#green]-> Vista: <color:green>retorna Lista de Planes disponibles</color>
+    Vista --> User: Muestra catálogo de Planes
     
     ' El socio decide comprar
-    Socio -> Vista: Elige un Plan y realiza el pago
-    Vista -> Controlador: contratarPlan(idSocio, idPlan)
+    User -> Vista: Elige un Plan y pulsa "Contratar"
+    Vista -> Controller: contratarPlan(idSocio, idPlan)
     
     ' Se guarda la nueva suscripción
-    Controlador -> SuscDAO: registrarNuevaSuscripcion(idSocio, idPlan)
+    Controller -> SuscDAO: registrarNuevaSuscripcion(idSocio, idPlan)
     activate SuscDAO
     
-    SuscDAO -> BD: INSERT INTO suscripcion (...)
-    activate BD
-    BD --> SuscDAO: Confirmación (1 fila afectada)
-    deactivate BD
+    SuscDAO -> DB: INSERT INTO suscripcion (...)
+    activate DB
+    DB --> SuscDAO: Confirmación (1 fila afectada)
+    deactivate DB
     
-    SuscDAO --> Controlador: retorna true
+    SuscDAO --> Controller: true (Éxito)
     deactivate SuscDAO
     
-    Controlador --> Vista: retorna confirmación_OK
-    Vista --> Socio: Muestra "Pago realizado y Plan activado"
+    Controller -[#green]-> Vista: <color:green>Confirmación: Plan contratado con éxito</color>
+    Vista --> User: Muestra "¡Suscripción activada!"
 end
 
-deactivate Controlador
+deactivate Controller
 deactivate Vista
 
 @enduml

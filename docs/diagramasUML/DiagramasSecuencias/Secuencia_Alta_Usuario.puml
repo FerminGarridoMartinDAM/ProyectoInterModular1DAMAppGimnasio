@@ -1,0 +1,46 @@
+@startuml
+title Diagrama de Secuencia: Alta de Socio - Gym APP
+
+autonumber
+actor "Secretario" as User
+boundary "FormularioAlta\n(Vista)" as Vista
+control "SocioController\n(Controlador)" as Controller
+participant "SocioDAO\n(Capa DAO)" as DAO
+database "Supabase\n(PostgreSQL)" as DB
+
+User -> Vista : Rellena datos (nombre, email...) y pulsa "Guardar"
+activate Vista
+
+Vista -> Controller : registrarSocio(nuevoSocio)
+activate Controller
+
+Controller -> Controller : Validar campos obligatorios
+
+alt Campos Vacíos
+    Controller -[#orange]-> Vista : <color:orange>Mostrar "Rellena todos los campos"</color>
+else Datos Correctos
+    
+    Controller -> DAO : insertar(nuevoSocio)
+    activate DAO
+
+    DAO -> DB : INSERT INTO usuario (...) \nINSERT INTO socio (...)
+    activate DB
+    
+    alt Email ya existe en DB
+        DB --> DAO : SQLException (Clave duplicada)
+        DAO --> Controller : false
+        Controller -[#red]-> Vista : <color:red>Mostrar "El email ya está registrado"</color>
+    else Inserción Correcta
+        DB --> DAO : true
+        DAO --> Controller : true
+        Controller -[#green]-> Vista : <color:green>Mostrar "Alta completada con éxito"</color>
+    end
+    deactivate DB
+    deactivate DAO
+
+end
+
+deactivate Controller
+deactivate Vista
+
+@enduml

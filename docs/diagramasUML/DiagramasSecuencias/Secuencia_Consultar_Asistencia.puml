@@ -1,0 +1,37 @@
+@startuml
+title Diagrama de Secuencia: Consultar Asistencia - Gym APP
+
+autonumber
+actor "Staff\n(Entrenador/Secretario)" as User
+boundary "PanelAsistencia\n(Vista)" as Vista
+control "ReservaController\n(Controlador)" as Controller
+participant "ReservaDAO\n(Capa DAO)" as DAO
+database "Supabase\n(PostgreSQL)" as DB
+
+User -> Vista : Selecciona una Sesión
+activate Vista
+
+Vista -> Controller : verAsistentes(idSesion)
+activate Controller
+
+' Uso del método listarPorSesion que creamos en el DAO
+Controller -> DAO : listarPorSesion(idSesion)
+activate DAO
+
+DAO -> DB : SELECT * FROM reserva INNER JOIN socio... WHERE id_sesion=?
+activate DB
+DB --> DAO : ResultSet (Lista de registros)
+deactivate DB
+
+DAO --> Controller : List<Reserva> (con datos del socio)
+deactivate DAO
+
+alt Lista vacía
+    Controller -[#orange]-> Vista : <color:orange>Mostrar "No hay reservas para esta sesión"</color>
+else Hay asistentes
+    Controller -[#green]-> Vista : <color:green>Mostrar Tabla de Asistentes</color>
+end
+
+deactivate Controller
+deactivate Vista
+@enduml

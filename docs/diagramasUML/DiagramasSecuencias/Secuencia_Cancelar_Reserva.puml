@@ -1,0 +1,37 @@
+@startuml
+title Diagrama de Secuencia: Cancelar Reserva - Gym APP
+
+autonumber
+actor "Socio" as User
+boundary "MisReservas\n(Vista)" as Vista
+control "ReservaController\n(Controlador)" as Controller
+participant "ReservaDAO\n(Capa DAO)" as DAO
+database "Supabase\n(PostgreSQL)" as DB
+
+User -> Vista : Clic en "Cancelar" (idReserva)
+activate Vista
+
+Vista -> Controller : cancelarReserva(idReserva)
+activate Controller
+
+Controller -> DAO : eliminar(idReserva)
+activate DAO
+
+DAO -> DB : DELETE FROM reserva WHERE id_reserva=?
+activate DB
+DB --> DAO : true (Filas afectadas > 0)
+deactivate DB
+
+DAO --> Controller : true
+deactivate DAO
+
+alt Cancelación Exitosa
+    Controller -[#green]-> Vista : <color:green>Mostrar "Reserva cancelada correctamente"</color>
+else Error en Cancelación
+    Controller -[#red]-> Vista : <color:red>Mostrar "Error al cancelar"</color>
+end
+
+deactivate Controller
+deactivate Vista
+
+@enduml

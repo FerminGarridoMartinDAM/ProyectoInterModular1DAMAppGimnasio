@@ -1,70 +1,72 @@
 @startuml
-title Secuencia: Programar_Sesion
+title Diagrama de Secuencia: Programar Nueva Sesión - Gym APP
+
+autonumber
 
 ' --- PARTICIPANTES ---
-actor Entrenador
+actor "Entrenador" as User
 boundary "MenuProgramacion" as Vista
-control "ProgramacionController" as Controlador
-entity "ClaseDAO" as ClaseDAO
-entity "SesionDAO" as SesionDAO
-database "PostgreSQL" as BD
+control "ProgramacionController" as Controller
+participant "ClaseDAO" as ClaseDAO
+participant "SesionDAO" as SesionDAO
+database "Supabase\n(PostgreSQL)" as DB
 
 ' --- FLUJO 1: Mostrar catálogo de clases ---
-Entrenador -> Vista: Selecciona "Programar Nueva Sesión"
+User -> Vista: Selecciona "Programar Nueva Sesión"
 activate Vista
 
-Vista -> Controlador: obtenerClasesDisponibles()
-activate Controlador
+Vista -> Controller: obtenerClasesDisponibles()
+activate Controller
 
-Controlador -> ClaseDAO: obtenerCatalogoClases()
+Controller -> ClaseDAO: listar()
 activate ClaseDAO
-ClaseDAO -> BD: SELECT * FROM clase
-activate BD
-BD --> ClaseDAO: Devuelve catálogo de disciplinas
-deactivate BD
-ClaseDAO --> Controlador: retorna Lista<Clase>
+ClaseDAO -> DB: SELECT * FROM clase
+activate DB
+DB --> ClaseDAO: Devuelve catálogo de disciplinas
+deactivate DB
+ClaseDAO --> Controller: retorna Lista<Clase>
 deactivate ClaseDAO
 
-Controlador --> Vista: retorna Lista<Clase>
-deactivate Controlador
+Controller -[#green]-> Vista: <color:green>retorna Lista de Clases</color>
+deactivate Controller
 
-Vista --> Entrenador: Muestra opciones (Yoga, CrossFit, etc.)
+Vista --> User: Muestra opciones (Yoga, CrossFit, etc.)
 
 ' --- FLUJO 2: Proceso de creación ---
-Entrenador -> Vista: Introduce datos (idClase, inicio, fin, sala)
-Vista -> Controlador: programarSesion(idEntrenador, idClase, inicio, fin, sala)
-activate Controlador
+User -> Vista: Introduce datos (idClase, inicio, fin, sala)
+Vista -> Controller: programarSesion(idEntrenador, idClase, inicio, fin, sala)
+activate Controller
 
 ' Validación de conflictos
-Controlador -> SesionDAO: verificarConflictos(idEntrenador, inicio, sala)
+Controller -> SesionDAO: verificarConflictos(sala, inicio)
 activate SesionDAO
-SesionDAO -> BD: SELECT count(*) FROM sesion WHERE sala = ? AND inicio = ?...
-activate BD
-BD --> SesionDAO: Devuelve número de conflictos
-deactivate BD
-SesionDAO --> Controlador: retorna hay_conflicto (boolean)
+SesionDAO -> DB: SELECT count(*) FROM sesion WHERE sala = ? AND inicio = ?
+activate DB
+DB --> SesionDAO: Resultado (0 o 1)
+deactivate DB
+SesionDAO --> Controller: hay_conflicto (boolean)
 deactivate SesionDAO
 
 alt Conflicto de horario o sala
-    Controlador --> Vista: retorna error_conflicto
-    Vista --> Entrenador: Muestra "Error: El horario o la sala ya están ocupados"
+    Controller -[#red]-> Vista: <color:red>retorna error_conflicto</color>
+    Vista --> User: Muestra "La sala ya está ocupada en ese horario"
     
 else Todo libre (Sin conflictos)
     ' Inserción final de la sesión
-    Controlador -> SesionDAO: registrarSesion(idEntrenador, idClase, inicio, fin, sala)
+    Controller -> SesionDAO: insertar(nuevaSesion)
     activate SesionDAO
-    SesionDAO -> BD: INSERT INTO sesion (...)
-    activate BD
-    BD --> SesionDAO: Confirmación (1 fila afectada)
-    deactivate BD
-    SesionDAO --> Controlador: retorna true
+    SesionDAO -> DB: INSERT INTO sesion (...)
+    activate DB
+    DB --> SesionDAO: Confirmación (éxito)
+    deactivate DB
+    SesionDAO --> Controller: true
     deactivate SesionDAO
     
-    Controlador --> Vista: retorna confirmacion_OK
-    Vista --> Entrenador: Muestra "Sesión programada con éxito"
+    Controller -[#green]-> Vista: <color:green>Confirmación: Sesión programada con éxito</color>
+    Vista --> User: Mensaje "Clase añadida al calendario"
 end
 
-deactivate Controlador
+deactivate Controller
 deactivate Vista
 
 @enduml

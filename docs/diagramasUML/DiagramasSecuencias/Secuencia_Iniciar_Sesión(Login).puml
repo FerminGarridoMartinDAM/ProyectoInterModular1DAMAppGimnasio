@@ -1,42 +1,41 @@
 @startuml
-title Secuencia: Iniciar Sesión (Login)
+title Diagrama de Secuencia: Proceso de Login - Gym APP
 
-' --- PARTICIPANTES ---
-actor Usuario
-boundary "MenuLogin" as Vista
-control "LoginController" as Controlador
-entity "UsuarioDAO" as DAO
-database "PostgreSQL" as BD
+autonumber
+actor "Usuario\n(Socio/Staff)" as User
+boundary "PantallaLogin\n(Vista)" as Vista
+control "LoginController\n(Controlador)" as Controller
+participant "UsuarioDAO\n(Capa DAO)" as DAO
+database "Supabase\n(PostgreSQL)" as DB
 
-' --- FLUJO DE EJECUCIÓN ---
-Usuario -> Vista: Introduce email y contraseña
+User -> Vista : Introduce email y contraseña
 activate Vista
 
-Vista -> Controlador: autenticarUsuario(email, password)
-activate Controlador
+Vista -> Controller : btnLoginClick(email, pass)
+activate Controller
 
-' El controlador delega en el DAO la búsqueda en base de datos
-Controlador -> DAO: obtenerUsuarioPorEmail(email)
-activate DAO
+' --- VALIDACIÓN LOCAL (Antes de ir a DB) ---
+Controller -> Controller : Validar formato (vacíos)
+alt Formato Incorrecto
+    Controller -[#orange]-> Vista : <color:orange>Mostrar "Rellena todos los campos"</color>
+else Formato Correcto
+    
+    Controller -> DAO : login(email, pass)
+    activate DAO
+    DAO -> DB : SELECT * FROM usuario WHERE email=? AND password=?
+    activate DB
+    DB --> DAO : Retorna datos (o vacío)
+    deactivate DB
 
-DAO -> BD: SELECT * FROM usuario WHERE email = ?
-activate BD
-BD --> DAO: Devuelve registro (o vacío si no existe)
-deactivate BD
-
-DAO --> Controlador: retorna Objeto Usuario (con su password_hash)
-deactivate DAO
-
-' El controlador toma la decisión lógica
-alt Credenciales correctas (coincide el hash)
-    Controlador --> Vista: retorna true (Login OK)
-    Vista --> Usuario: Muestra "Bienvenido" y abre Menú Principal
-else Credenciales incorrectas o email no existe
-    Controlador --> Vista: retorna false (Login Fallido)
-    Vista --> Usuario: Muestra error "Credenciales incorrectas"
+    alt Credenciales Correctas
+        DAO --> Controller : Retorna Objeto Usuario
+        Controller -[#green]-> Vista : <color:green>Redirigir al Menú</color>
+    else Credenciales Incorrectas
+        DAO --> Controller : Retorna null
+        Controller -[#red]-> Vista : <color:red>Mostrar "Datos inválidos"</color>
+    end
+    deactivate DAO
 end
-
-deactivate Controlador
+deactivate Controller
 deactivate Vista
-
 @enduml

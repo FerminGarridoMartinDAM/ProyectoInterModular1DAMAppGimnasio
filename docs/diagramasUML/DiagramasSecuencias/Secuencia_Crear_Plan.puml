@@ -1,0 +1,51 @@
+@startuml
+title Diagrama de Secuencia: Crear Nuevo Plan - Gym APP
+
+autonumber
+
+' --- PARTICIPANTES ---
+actor "Secretario" as User
+boundary "GestorPlanes" as Vista
+control "PlanController" as Controller
+participant "PlanDAO" as DAO
+database "Supabase\n(PostgreSQL)" as DB
+
+' --- FLUJO DE EJECUCIÓN ---
+User -> Vista : Introduce datos del plan (Nombre, Precio)
+activate Vista
+
+Vista -> Controller : crearNuevoPlan(nombre, precio)
+activate Controller
+
+' Validación de negocio en el controlador
+Controller -> Controller : validarDatos(precio > 0)
+
+alt Datos inválidos
+    Controller -[#orange]-> Vista : <color:orange>Mostrar "El precio debe ser un valor positivo"</color>
+else Datos correctos
+    
+    ' Intento de inserción a través del DAO
+    Controller -> DAO : insertar(nuevoPlan)
+    activate DAO
+
+    DAO -> DB : INSERT INTO plan (nombre, precio) VALUES (?, ?)
+    activate DB
+    
+    alt Error: Nombre de plan duplicado
+        DB --> DAO : SQLException (Unique constraint)
+        DAO --> Controller : false
+        Controller -[#red]-> Vista : <color:red>Mostrar "Ya existe un plan con ese nombre"</color>
+    else Éxito en inserción
+        DB --> DAO : true
+        DAO --> Controller : true
+        Controller -[#green]-> Vista : <color:green>Mostrar "Nuevo plan creado correctamente"</color>
+    end
+    
+    deactivate DB
+    deactivate DAO
+end
+
+deactivate Controller
+deactivate Vista
+
+@enduml
