@@ -1,0 +1,70 @@
+@startuml
+title Diagrama de Clases ( Modelos) - Gym APP
+
+skinparam classAttributeIconSize 0
+
+
+package "model" {
+    
+    abstract class Usuario {
+        - idUsuario : int
+        - nombre : String
+        - apellido : String
+        - email : String
+        - password : String
+        - telefono : String
+    }
+
+    class Socio {
+        - fechaAlta : LocalDate
+    }
+
+    class Entrenador {
+        - especialidad : String
+    }
+
+    class Secretario {
+        - turno : String
+    }
+
+    class Clase {
+        - idClase : int
+        - nombre : String
+        - aforoMax : int
+    }
+
+    class Sesion {
+        - idSesion : int
+        - idClase : int
+        - idEntrenador : int
+        - inicio : LocalDateTime
+        - fin : LocalDateTime
+        - sala : String
+    }
+
+    class Reserva {
+        - idReserva : int
+        - idSocio : int
+        - idSesion : int
+        - fechaReserva : LocalDateTime
+    }
+
+    class Plan {
+        - idPlan : int
+        - nombre : String
+        - precio : double
+    }
+
+    class Suscripcion {
+        - idSuscripcion : int
+        - idSocio : int
+        - idPlan : int
+        - fechaFin : LocalDate
+    }
+
+    ' Herencia
+    Usuario <|-- Socio
+    Usuario <|-- Entrenador
+    Usuario <|-- Secretario
+}
+@enduml

@@ -1,0 +1,111 @@
+@startuml
+title Diagrama de Estructura: Capa DAO y Conexión - Gym APP
+
+skinparam classAttributeIconSize 0
+
+
+' PAQUETE DAO (Interfaces arriba, Clases abajo)
+package "dao" {
+    
+    ' Bloque de Interfaces
+    interface UsuarioDAO {
+        + login(email, pass) : Usuario
+        + buscarPorId(id) : Usuario
+        + modificar(u) : boolean
+        + eliminar(id) : boolean
+    }
+    interface SocioDAO {
+        + listar() : List<Socio>
+        + buscarPorId(id) : Socio
+        + insertar(s) : boolean
+        + modificar(s) : boolean
+        + eliminar(id) : boolean
+    }
+    interface EntrenadorDAO {
+        + listar() : List<Entrenador>
+        + buscarPorId(id) : Entrenador
+        + insertar(e) : boolean
+        + modificar(e) : boolean
+        + eliminar(id) : boolean
+    }
+    interface SecretarioDAO {
+        + listar() : List<Secretario>
+        + buscarPorId(id) : Secretario
+        + insertar(s) : boolean
+        + modificar(s) : boolean
+        + eliminar(id) : boolean
+    }
+    interface ClaseDAO {
+        + listar() : List<Clase>
+        + buscarPorId(id) : Clase
+        + insertar(c) : boolean
+        + modificar(c) : boolean
+        + eliminar(id) : boolean
+    }
+    interface SesionDAO {
+        + listarPorFecha(f) : List<Sesion>
+        + buscarPorId(id) : Sesion
+        + insertar(s) : boolean
+        + modificar(s) : boolean
+        + eliminar(id) : boolean
+    }
+    interface ReservaDAO {
+        + listarPorSesion(id) : List<Reserva>
+        + buscarPorId(id) : Reserva
+        + insertar(r) : boolean
+        + eliminar(id) : boolean
+    }
+    interface PlanDAO {
+        + listar() : List<Plan>
+        + buscarPorId(id) : Plan
+        + insertar(p) : boolean
+        + modificar(p) : boolean
+        + eliminar(id) : boolean
+    }
+    interface SuscripcionDAO {
+        + consultarActiva(idSocio) : Suscripcion
+        + buscarPorId(id) : Suscripcion
+        + insertar(s) : boolean
+        + modificar(s) : boolean
+        + eliminar(id) : boolean
+    }
+
+    ' Separador invisible para forzar a las interfaces arriba
+    UsuarioDAO -[hidden]down-> UsuarioDAOPostgres
+
+    ' Bloque de Implementaciones
+    class UsuarioDAOPostgres
+    class SocioDAOPostgres
+    class EntrenadorDAOPostgres
+    class SecretarioDAOPostgres
+    class ClaseDAOPostgres
+    class SesionDAOPostgres
+    class ReservaDAOPostgres
+    class PlanDAOPostgres
+    class SuscripcionDAOPostgres
+}
+
+' PAQUETE DATABASE 
+package "database" {
+    class ConexionDB {
+        + {static} getConexion() : Connection
+    }
+}
+
+
+
+' Herencia de comportamiento (Implements)
+UsuarioDAO <|.. UsuarioDAOPostgres
+SocioDAO <|.. SocioDAOPostgres
+EntrenadorDAO <|.. EntrenadorDAOPostgres
+SecretarioDAO <|.. SecretarioDAOPostgres
+ClaseDAO <|.. ClaseDAOPostgres
+SesionDAO <|.. SesionDAOPostgres
+ReservaDAO <|.. ReservaDAOPostgres
+PlanDAO <|.. PlanDAOPostgres
+SuscripcionDAO <|.. SuscripcionDAOPostgres
+
+' Dependencia de conexión
+"dao" ..> database : "solicita conexión a"
+
+@enduml
