@@ -1,8 +1,43 @@
 @startuml
-title Diagrama de Clases ( Modelos) - Gym APP
+title Diagrama de Clases (Modelos) - Gym APP
 
 skinparam classAttributeIconSize 0
 
+package "model.enums" {
+    enum EstadoUsuario {
+        ACTIVO
+        INACTIVO
+    }
+    enum EstadoSuscripcion {
+        ACTIVA
+        VENCIDA
+        CANCELADA
+        ARCHIVADA
+    }
+    enum EstadoSesion {
+        PROGRAMADA
+        EN_CURSO
+        FINALIZADA
+        CANCELADA
+    }
+    enum EstadoReserva {
+        PENDIENTE
+        CONFIRMADA
+        REALIZADA
+        CANCELADA
+        AUSENTE
+    }
+    enum RolUsuario {
+        SOCIO
+        ENTRENADOR
+        SECRETARIO
+    }
+    enum TurnoTrabajo {
+        MAÑANA
+        TARDE
+        NOCHE
+    }
+}
 
 package "model" {
     
@@ -12,19 +47,21 @@ package "model" {
         - apellido : String
         - email : String
         - password : String
-        - telefono : String
+        - rol : RolUsuario
+        - estado : EstadoUsuario
     }
 
-    class Socio {
+    class Socio extends Usuario {
+        - telefono : String
         - fechaAlta : LocalDate
     }
 
-    class Entrenador {
+    class Entrenador extends Usuario {
         - especialidad : String
     }
 
-    class Secretario {
-        - turno : String
+    class Secretario extends Usuario {
+        - turno : TurnoTrabajo
     }
 
     class Clase {
@@ -40,6 +77,7 @@ package "model" {
         - inicio : LocalDateTime
         - fin : LocalDateTime
         - sala : String
+        - estado : EstadoSesion
     }
 
     class Reserva {
@@ -47,24 +85,26 @@ package "model" {
         - idSocio : int
         - idSesion : int
         - fechaReserva : LocalDateTime
+        - estado : EstadoReserva
     }
 
     class Plan {
         - idPlan : int
         - nombre : String
         - precio : double
+        - activo : boolean
     }
 
     class Suscripcion {
         - idSuscripcion : int
         - idSocio : int
         - idPlan : int
+        - fechaInicio : LocalDate
         - fechaFin : LocalDate
+        - estado : EstadoSuscripcion
     }
-
-    ' Herencia
-    Usuario <|-- Socio
-    Usuario <|-- Entrenador
-    Usuario <|-- Secretario
 }
+
+
+
 @enduml

@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import model.enums.EstadoUsuario;
+
 
 @Getter
 @Setter
@@ -13,6 +15,7 @@ public abstract class Usuario {
 
 
     private int idUsuario;
+    private EstadoUsuario estado;
     private String nombre;
     private String apellido;
     private String email;

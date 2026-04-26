@@ -1,0 +1,40 @@
+@startuml
+title Diagrama de Estados: Ciclo de Vida de una Suscripcion (Con Histórico) - Gym APP
+
+
+' Creación de la suscripción en BD
+[*] --> Activa : insertar() [pago_exitoso]
+
+state Activa {
+  Activa : El socio puede entrar y reservar
+}
+
+state Vencida {
+  Vencida : Fecha fin superada
+  Vencida : Acceso denegado
+}
+
+state Cancelada {
+  Cancelada : Baja voluntaria
+  Cancelada : Acceso cortado de raíz
+}
+
+' Estado histórico (Soft Delete para conservación de métricas)
+state Archivada {
+  Archivada : Registro histórico para estadísticas
+}
+
+' Transiciones de ciclo de vida estándar
+Activa --> Vencida : [fecha_actual > fecha_fin]
+Activa --> Cancelada : solicitarBaja()
+
+' Transiciones a estado histórico (Archivado)
+Vencida --> Archivada : archivar() [no_renovada]
+Cancelada --> Archivada : archivar() [inmediato]
+
+
+' Reactivación de suscripción
+Vencida --> Activa : renovar() [nuevo_pago]
+Archivada --> Activa : re_contratar() [nuevo_pago]
+
+@enduml
