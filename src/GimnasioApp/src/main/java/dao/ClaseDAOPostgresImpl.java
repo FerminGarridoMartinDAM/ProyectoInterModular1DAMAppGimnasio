@@ -2,38 +2,39 @@ package dao;
 
 import database.ConexionDB;
 import database.SchemDB;
-import model.Plan;
-import model.enums.EstadoPlan;
+import model.Clase;
+import model.enums.EstadoClase;
 import model.enums.EstadoReserva;
+import model.enums.EstadoUsuario;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlanDAOPostgresImpl implements PlanDAO {
+public class ClaseDAOPostgresImpl implements ClaseDAO {
 
     private Connection connection;
     private PreparedStatement preparedStatement;
     private ResultSet resultSet;
 
-    public PlanDAOPostgresImpl() {
+    public ClaseDAOPostgresImpl() {
         // Pedimos la conexión al Singleton al instanciar el DAO
         connection = ConexionDB.conectar();
     }
 
     @Override
-    public int insert(Plan plan) {
+    public int insert(Clase clase) {
         String query = String.format("INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
-                SchemDB.TAB_PLAN, SchemDB.COL_PLAN_NOMBRE, SchemDB.COL_PLAN_PRECIO, SchemDB.COL_PLAN_ESTADO);
+                SchemDB.TAB_CLASE, SchemDB.COL_CLASE_NOMBRE, SchemDB.COL_CLASE_AFORO, SchemDB.COL_CLASE_ESTADO);
 
         try {
             // Preparamos la consulta
             preparedStatement = connection.prepareStatement(query);
 
             // Mapeamos los datos del objeto al SQL
-            preparedStatement.setString(1, plan.getNombre());
-            preparedStatement.setDouble(2, plan.getPrecioMensual());
-            preparedStatement.setString(3, plan.getEstado().name());
+            preparedStatement.setString(1, clase.getNombre());
+            preparedStatement.setInt(2, clase.getAforoMax());
+            preparedStatement.setString(3, clase.getEstado().name());
 
             // Ejecutamos y retornamos el número de filas afectadas
             return preparedStatement.executeUpdate();
@@ -45,9 +46,9 @@ public class PlanDAOPostgresImpl implements PlanDAO {
     }
 
     @Override
-    public List<Plan> selectAll() {
-        List<Plan> listaPlanes = new ArrayList<>();
-        String query = "SELECT * FROM " + SchemDB.TAB_PLAN;
+    public List<Clase> selectAll() {
+        List<Clase> listaClases = new ArrayList<>();
+        String query = "SELECT * FROM " + SchemDB.TAB_CLASE;
 
         try {
             // Preparamos la consulta
@@ -58,34 +59,34 @@ public class PlanDAOPostgresImpl implements PlanDAO {
 
             // Recorremos los resultados mapeando cada columna
             while (resultSet.next()) {
-                int id = resultSet.getInt(SchemDB.COL_PLAN_ID);
-                String nombre = resultSet.getString(SchemDB.COL_PLAN_NOMBRE);
-                double precio = resultSet.getDouble(SchemDB.COL_PLAN_PRECIO);
-                EstadoPlan estado = EstadoPlan.valueOf(resultSet.getString(SchemDB.COL_RES_ESTADO).trim().toUpperCase());
-                //String estadoStr = resultSet.getString(SchemDB.COL_PLAN_ESTADO);
+                int id = resultSet.getInt(SchemDB.COL_CLASE_ID);
+                String nombre = resultSet.getString(SchemDB.COL_CLASE_NOMBRE);
+                int aforo = resultSet.getInt(SchemDB.COL_CLASE_AFORO);
+                EstadoClase estado = EstadoClase.valueOf(resultSet.getString(SchemDB.COL_USUARIO_ESTADO).trim().toUpperCase());
+                //String estadoStr = resultSet.getString(SchemDB.COL_CLASE_ESTADO);
 
-                listaPlanes.add(new Plan(id, estado, nombre, precio));
+                listaClases.add(new Clase(id, estado, nombre, aforo));
             }
         } catch (SQLException e) {
             System.out.println("❌ ERROR (selectAll): " + e.getMessage());
         }
-        return listaPlanes;
+        return listaClases;
     }
 
     @Override
-    public int update(Plan plan) {
+    public int update(Clase clase) {
         String query = String.format("UPDATE %s SET %s=?, %s=?, %s=? WHERE %s=?",
-                SchemDB.TAB_PLAN, SchemDB.COL_PLAN_NOMBRE, SchemDB.COL_PLAN_PRECIO,
-                SchemDB.COL_PLAN_ESTADO, SchemDB.COL_PLAN_ID);
+                SchemDB.TAB_CLASE, SchemDB.COL_CLASE_NOMBRE, SchemDB.COL_CLASE_AFORO,
+                SchemDB.COL_CLASE_ESTADO, SchemDB.COL_CLASE_ID);
         try {
             // Preparamos la consulta
             preparedStatement = connection.prepareStatement(query);
 
             // Mapeamos los datos actualizados
-            preparedStatement.setString(1, plan.getNombre());
-            preparedStatement.setDouble(2, plan.getPrecioMensual());
-            preparedStatement.setString(3, plan.getEstado().name());
-            preparedStatement.setInt(4, plan.getIdPlan());
+            preparedStatement.setString(1, clase.getNombre());
+            preparedStatement.setInt(2, clase.getAforoMax());
+            preparedStatement.setString(3, clase.getEstado().name());
+            preparedStatement.setInt(4, clase.getIdClase());
 
             return preparedStatement.executeUpdate();
 
@@ -96,9 +97,9 @@ public class PlanDAOPostgresImpl implements PlanDAO {
     }
 
     @Override
-    public int actualizarEstado(int id, EstadoPlan nuevoEstado) {
+    public int actualizarEstado(int id, EstadoClase nuevoEstado) {
         String query = String.format("UPDATE %s SET %s=? WHERE %s=?",
-                SchemDB.TAB_PLAN, SchemDB.COL_PLAN_ESTADO, SchemDB.COL_PLAN_ID);
+                SchemDB.TAB_CLASE, SchemDB.COL_CLASE_ESTADO, SchemDB.COL_CLASE_ID);
         try {
             // Preparamos la consulta
             preparedStatement = connection.prepareStatement(query);
@@ -118,7 +119,7 @@ public class PlanDAOPostgresImpl implements PlanDAO {
     @Override
     public int delete(int id) {
         String query = String.format("DELETE FROM %s WHERE %s=?",
-                SchemDB.TAB_PLAN, SchemDB.COL_PLAN_ID);
+                SchemDB.TAB_CLASE, SchemDB.COL_CLASE_ID);
         try {
             // Preparamos la consulta
             preparedStatement = connection.prepareStatement(query);

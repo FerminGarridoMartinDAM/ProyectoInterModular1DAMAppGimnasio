@@ -13,9 +13,6 @@ import model.enums.EstadoReserva;
 @AllArgsConstructor
 public class Reserva {
 
-    // En tu tabla relacional, esta entidad es la unión de dos FK
-    private int idSocio;
-    private int idSesion;
    //TABLA INTERMEDIA
     private int idSocio;  //FK
     private int idSesion; //FK

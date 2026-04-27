@@ -31,7 +31,7 @@ public class ConexionDB {
         }
     }
 
-    // Método público para pedir la conexión a la base de datos
+    //  Método público para pedir la conexión a la base de datos
     public static Connection conectar() {
         // Solo si la conexión es nula (no existe aún), la creamos
         if (conexion == null) {
