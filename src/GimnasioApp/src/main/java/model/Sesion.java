@@ -25,4 +25,26 @@ public class Sesion {
     public String toString() {
         return "Sesion [" + idSesion + "] Sala: " + sala + " | Inicio: " + inicio + " | Estado: " + estado;
     }
+
+
+
+
+    /*
+
+
+     Para MANDAR a Supabase (Sacamos el dato convertido)
+
+public Timestamp getInicioAsTimestamp() {
+    return Timestamp.valueOf(this.inicio);
+}
+
+ Para RECIBIR de Supabase (Metemos el dato y lo convertimos al guardar)
+
+public void setInicioFromTimestamp(Timestamp timestamp) {
+    this.inicio = timestamp.toLocalDateTime();
+
+
+  !!!TODO  Tambien he leido que hay unos MAPPERS, revisar.
+
+}*/
 }
