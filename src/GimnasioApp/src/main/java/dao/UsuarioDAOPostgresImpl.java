@@ -2,10 +2,14 @@ package dao;
 
 import database.ConexionDB;
 import database.SchemDB;
+import model.Entrenador;
+import model.Secretario;
+import model.Socio;
 import model.Usuario;
 import model.enums.EstadoUsuario;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,42 +25,102 @@ public class UsuarioDAOPostgresImpl implements UsuarioDAO {
     }
 
     @Override
+
     public Usuario login(String email, String password) {
-        // Buscamos en la tabla madre si existe la combinación de email y password
-        String query = String.format("SELECT * FROM %s WHERE %s = ? AND %s = ?",
+        // Comprobamos si las credenciales existen en la tabla madre
+        String queryUsuario = String.format("SELECT * FROM %s WHERE %s = ? AND %s = ?",
                 SchemDB.TAB_USUARIO, SchemDB.COL_USUARIO_EMAIL, SchemDB.COL_USUARIO_PASSWORD);
 
         try {
-            preparedStatement = connection.prepareStatement(query);
+            preparedStatement = connection.prepareStatement(queryUsuario);
             preparedStatement.setString(1, email);
             preparedStatement.setString(2, password);
 
             resultSet = preparedStatement.executeQuery();
 
-            // Si el cursor encuentra una fila, las credenciales son correctas
             if (resultSet.next()) {
-                // Extraemos los datos para devolver el objeto Usuario que ha iniciado sesión
+                // Extraemos los datos  del usuario para devolver el objeto Usuario que ha iniciado sesión
                 int id = resultSet.getInt(SchemDB.COL_USUARIO_ID);
-
-                // Aplicamos tu parseo de Nivel 2: Limpieza y conversión a Enum en una línea
                 EstadoUsuario estado = EstadoUsuario.valueOf(resultSet.getString(SchemDB.COL_USUARIO_ESTADO).trim().toUpperCase());
-
                 String nombre = resultSet.getString(SchemDB.COL_USUARIO_NOMBRE);
                 String apellido = resultSet.getString(SchemDB.COL_USUARIO_APELLIDO);
                 String tel = resultSet.getString(SchemDB.COL_USUARIO_TELEFONO);
 
-                // Devolvemos un objeto Usuario genérico con los datos de la tabla madre
-                return new Usuario(id, estado, nombre, apellido, email, password, tel);
+                //TODO esto hay que hacerlo porque la clase Usuario es abstract
+
+
+                // Ahora que sabemos que existe y tenemos su ID, averiguamos qué "hijo" es. (Polimorfismo)
+
+                // ¿Es un Socio? buscamos su id el la tabla socio
+                String querySocio = String.format("SELECT %s FROM %s WHERE %s = ?",
+                        SchemDB.COL_SOCIO_FECHA_ALTA, SchemDB.TAB_SOCIO, SchemDB.COL_USUARIO_ID);
+                PreparedStatement psSocio = connection.prepareStatement(querySocio);
+                psSocio.setInt(1, id);
+                ResultSet rsSocio = psSocio.executeQuery();
+
+                if (rsSocio.next()) {
+                    // Si taba en la tabla socio. Cogemos su fecha y creamos el objeto socio.
+                    LocalDate fechaAlta = rsSocio.getDate(SchemDB.COL_SOCIO_FECHA_ALTA).toLocalDate();
+                    return new Socio(id, estado, nombre, apellido, email, password, tel, fechaAlta);
+                }
+
+                // ¿Es un Entrenador? buscamos su id el la tabla entrenador
+                String queryEntrenador = String.format("SELECT %s FROM %s WHERE %s = ?",
+                        SchemDB.COL_ENTRENADOR_ESPECIALIDAD, SchemDB.TAB_ENTRENADOR, SchemDB.COL_USUARIO_ID);
+                PreparedStatement psEntrenador = connection.prepareStatement(queryEntrenador);
+                psEntrenador.setInt(1, id);
+                ResultSet rsEntrenador = psEntrenador.executeQuery();
+
+                if (rsEntrenador.next()) {
+                    String especialidad = rsEntrenador.getString(SchemDB.COL_ENTRENADOR_ESPECIALIDAD);
+                    return new Entrenador(id, estado, nombre, apellido, email, password, tel, especialidad);
+                }
+
+                // ¿Es un Secretario? buscamos su id el la tabla secretario
+                String querySecretario = String.format("SELECT %s FROM %s WHERE %s = ?",
+                        SchemDB.COL_SECRETARIO_TURNO, SchemDB.TAB_SECRETARIO, SchemDB.COL_USUARIO_ID);
+                PreparedStatement psSecretario = connection.prepareStatement(querySecretario);
+                psSecretario.setInt(1, id);
+                ResultSet rsSecretario = psSecretario.executeQuery();
+
+                if (rsSecretario.next()) {
+                    String turno = rsSecretario.getString(SchemDB.COL_SECRETARIO_TURNO);
+                    return new Secretario(id, estado, nombre, apellido, email, password, tel, turno);
+                }
             }
         } catch (SQLException e) {
             System.out.println("❌ ERROR (login): " + e.getMessage());
         }
 
-        // Si no hay resultados o hay error, devolvemos null (acceso denegado)
-        return null;
+        return null; // Si no está en ninguna tabla o la contraseña es incorrecta
     }
 
+            // Tenia problemas con el selectALL porque no podia crear un new Usuario al ser abstrac , (lo dejo comentado despues)
+        // Entonces lo que he hecho es usar los DAOS para usar el selectALL de cada DAO y aladri a listaUsuarios.
     @Override
+    public List<Usuario> selectAll() {
+        List<Usuario> listaTodosLosUsuarios = new ArrayList<>();
+
+
+        // Traemos a todos los Socios y los metemos en la lista general
+        SocioDAO socioDAO = new SocioDAOPostgresImpl();
+        listaTodosLosUsuarios.addAll(socioDAO.selectAll());
+
+        // Traemos a todos los Entrenadores y los metemos en la lista general
+        EntrenadorDAO entrenadorDAO = new EntrenadorDAOPostgresImpl();
+        listaTodosLosUsuarios.addAll(entrenadorDAO.selectAll());
+
+        // Traemos a todos los Secretarios y los metemos en la lista general
+        SecretarioDAO secretarioDAO = new SecretarioDAOPostgresImpl();
+        listaTodosLosUsuarios.addAll(secretarioDAO.selectAll());
+
+        // Gracias al Polimorfismo, una List<Usuario> acepta sin problemas objetos de tipo Socio, Entrenador y Secretario.
+
+        return listaTodosLosUsuarios;
+    }
+
+
+   /* @Override
     public List<Usuario> selectAll() {
         List<Usuario> listaUsuarios = new ArrayList<>();
         // Aquí solo miramos la tabla madre para ver todos los usuarios registrados,
@@ -82,7 +146,7 @@ public class UsuarioDAOPostgresImpl implements UsuarioDAO {
             System.out.println("❌ ERROR (selectAll usuarios): " + e.getMessage());
         }
         return listaUsuarios;
-    }
+    }*/
 
     @Override
     public int update(Usuario usuario) {
