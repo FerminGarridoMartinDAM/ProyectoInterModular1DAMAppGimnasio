@@ -21,10 +21,12 @@
             <version>42.7.2</version>
         </dependency>
 
+        <!-- Source: https://mvnrepository.com/artifact/org.projectlombok/lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.34</version> <scope>provided</scope>
+            <version>1.18.42</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
