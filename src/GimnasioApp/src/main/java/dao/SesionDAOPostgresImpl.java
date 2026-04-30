@@ -18,7 +18,7 @@ public class SesionDAOPostgresImpl implements SesionDAO {
 
     public SesionDAOPostgresImpl() {
         // Pedimos la conexión al Singleton al instanciar el DAO
-        connection = ConexionDB.conectar();
+        connection = ConexionDB.getConexion();
     }
 
     @Override

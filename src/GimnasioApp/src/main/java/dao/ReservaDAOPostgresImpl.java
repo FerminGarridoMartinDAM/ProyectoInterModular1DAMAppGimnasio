@@ -18,7 +18,7 @@ public class ReservaDAOPostgresImpl implements ReservaDAO {
 
     public ReservaDAOPostgresImpl() {
         // Pedimos la conexión al Singleton al instanciar el DAO
-        connection = ConexionDB.conectar();
+        connection = ConexionDB.getConexion();
     }
 
     @Override

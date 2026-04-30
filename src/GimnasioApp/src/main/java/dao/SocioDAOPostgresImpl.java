@@ -17,7 +17,7 @@ public class SocioDAOPostgresImpl implements SocioDAO {
     private ResultSet resultSet;
 
     public SocioDAOPostgresImpl() {
-        connection = ConexionDB.conectar();
+        connection = ConexionDB.getConexion();
     }
 
     @Override

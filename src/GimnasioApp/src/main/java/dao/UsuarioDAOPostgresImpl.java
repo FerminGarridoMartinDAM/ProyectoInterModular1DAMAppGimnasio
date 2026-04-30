@@ -21,7 +21,7 @@ public class UsuarioDAOPostgresImpl implements UsuarioDAO {
 
     public UsuarioDAOPostgresImpl() {
         // Al igual que en los hijos, pedimos la conexión única al Singleton
-        connection = ConexionDB.conectar();
+        connection = ConexionDB.getConexion();
     }
 
     @Override
@@ -97,6 +97,7 @@ public class UsuarioDAOPostgresImpl implements UsuarioDAO {
 
             // Tenia problemas con el selectALL porque no podia crear un new Usuario al ser abstrac , (lo dejo comentado despues)
         // Entonces lo que he hecho es usar los DAOS para usar el selectALL de cada DAO y aladri a listaUsuarios.
+
     @Override
     public List<Usuario> selectAll() {
         List<Usuario> listaTodosLosUsuarios = new ArrayList<>();
@@ -105,11 +106,9 @@ public class UsuarioDAOPostgresImpl implements UsuarioDAO {
         // Traemos a todos los Socios y los metemos en la lista general
         SocioDAO socioDAO = new SocioDAOPostgresImpl();
         listaTodosLosUsuarios.addAll(socioDAO.selectAll());
-
         // Traemos a todos los Entrenadores y los metemos en la lista general
         EntrenadorDAO entrenadorDAO = new EntrenadorDAOPostgresImpl();
         listaTodosLosUsuarios.addAll(entrenadorDAO.selectAll());
-
         // Traemos a todos los Secretarios y los metemos en la lista general
         SecretarioDAO secretarioDAO = new SecretarioDAOPostgresImpl();
         listaTodosLosUsuarios.addAll(secretarioDAO.selectAll());

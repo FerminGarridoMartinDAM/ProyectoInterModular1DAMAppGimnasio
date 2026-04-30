@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.1 Chrome/142.0.7444.265 Electron/39.8.0 Safari/537.36">
   <diagram name="Página-1" id="4kjb6GMMS539kohvIAF5">
-    <mxGraphModel dx="1007" dy="2341" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="2473" dy="3341" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -655,7 +655,7 @@
         <mxCell id="Z_ZdpuGGuMJHUI4dIWIy-81" connectable="0" parent="Z_ZdpuGGuMJHUI4dIWIy-82" style="group" value="" vertex="1">
           <mxGeometry height="520" width="540" x="40" y="50" as="geometry" />
         </mxCell>
-        <mxCell id="6OZeqa4AXhPbDYOONq1--122" parent="Z_ZdpuGGuMJHUI4dIWIy-81" style="shape=table;startSize=30;container=1;collapsible=1;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;fillColor=#e3c800;fontColor=#000000;strokeColor=#B09500;labelBorderColor=none;backgroundOutline=1;" value="ENTIDAD1_ENTIDAD2" vertex="1">
+        <mxCell id="6OZeqa4AXhPbDYOONq1--122" parent="Z_ZdpuGGuMJHUI4dIWIy-81" style="shape=table;startSize=30;container=1;collapsible=1;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;fillColor=#e3c800;fontColor=#000000;strokeColor=#B09500;labelBorderColor=none;backgroundOutline=1;" value="TABLA INTERMEDIA&#xa;ENTIDAD1_ENTIDAD2" vertex="1">
           <mxGeometry height="180" width="430" y="340" as="geometry" />
         </mxCell>
         <mxCell id="6OZeqa4AXhPbDYOONq1--123" parent="6OZeqa4AXhPbDYOONq1--122" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=#fa6800;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;strokeColor=#C73500;top=0;left=0;right=0;bottom=1;fontColor=#000000;labelBorderColor=none;backgroundOutline=1;" value="" vertex="1">

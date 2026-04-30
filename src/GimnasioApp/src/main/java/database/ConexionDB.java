@@ -19,7 +19,7 @@ public class ConexionDB {
 
 
         //Aqui creamos la conexion con SUPABASE
-    private static void getConnection() {
+    private static void createConexion() {
         try {
             // Intentamos abrir el canal con Supabase
             conexion = DriverManager.getConnection(URL, USUARIO, PASSWORD);
@@ -32,10 +32,10 @@ public class ConexionDB {
     }
 
     //  Método público para pedir la conexión a la base de datos
-    public static Connection conectar() {
+    public static Connection getConexion() {
         // Solo si la conexión es nula (no existe aún), la creamos
         if (conexion == null) {
-            getConnection();
+            createConexion();
         }
         // Si ya existe, simplemente devolvemos la que está abierta
         return conexion;

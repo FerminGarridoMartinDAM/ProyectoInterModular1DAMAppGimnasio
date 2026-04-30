@@ -18,7 +18,7 @@ public class SuscripcionDAOPostgresImpl implements SuscripcionDAO {
 
     public SuscripcionDAOPostgresImpl() {
         // Pedimos la conexión al Singleton al instanciar el DAO
-        connection = ConexionDB.conectar();
+        connection = ConexionDB.getConexion();
     }
 
     @Override

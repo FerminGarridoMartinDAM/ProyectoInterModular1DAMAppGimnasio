@@ -16,7 +16,7 @@ public class EntrenadorDAOPostgresImpl implements EntrenadorDAO {
     private ResultSet resultSet;
 
     public EntrenadorDAOPostgresImpl() {
-        connection = ConexionDB.conectar();
+        connection = ConexionDB.getConexion();
     }
 
     @Override

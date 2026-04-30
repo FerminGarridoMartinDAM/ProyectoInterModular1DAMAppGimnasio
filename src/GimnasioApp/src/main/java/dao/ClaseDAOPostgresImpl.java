@@ -4,8 +4,6 @@ import database.ConexionDB;
 import database.SchemDB;
 import model.Clase;
 import model.enums.EstadoClase;
-import model.enums.EstadoReserva;
-import model.enums.EstadoUsuario;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -19,7 +17,7 @@ public class ClaseDAOPostgresImpl implements ClaseDAO {
 
     public ClaseDAOPostgresImpl() {
         // Pedimos la conexión al Singleton al instanciar el DAO
-        connection = ConexionDB.conectar();
+        connection = ConexionDB.getConexion();
     }
 
     @Override

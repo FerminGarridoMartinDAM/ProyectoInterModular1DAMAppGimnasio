@@ -16,7 +16,7 @@ public class SecretarioDAOPostgresImpl implements SecretarioDAO {
     private ResultSet resultSet;
 
     public SecretarioDAOPostgresImpl() {
-        connection = ConexionDB.conectar();
+        connection = ConexionDB.getConexion();
     }
 
     @Override

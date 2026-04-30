@@ -4,7 +4,6 @@ import database.ConexionDB;
 import database.SchemDB;
 import model.Plan;
 import model.enums.EstadoPlan;
-import model.enums.EstadoReserva;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -18,7 +17,7 @@ public class PlanDAOPostgresImpl implements PlanDAO {
 
     public PlanDAOPostgresImpl() {
         // Pedimos la conexión al Singleton al instanciar el DAO
-        connection = ConexionDB.conectar();
+        connection = ConexionDB.getConexion();
     }
 
     @Override
