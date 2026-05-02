@@ -61,7 +61,7 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MapsJsonDTO {
+public class GimnasioMapsJsonDTO {
 
 
     // 1. Agrupa a todos los usuarios (Socios, Entrenadores, Secretarios) usando "tipo_rol"

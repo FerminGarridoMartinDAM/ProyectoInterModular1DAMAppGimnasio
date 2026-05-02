@@ -35,7 +35,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ObjetosJavaDTO {
+public class GimnasioObjetosJavaDTO {
 
     // 1. Lista de usuarios reales (Socios, Entrenadores, Secretarios ya polimorfizados)
     private List<Usuario> usuarios = new ArrayList<>();
