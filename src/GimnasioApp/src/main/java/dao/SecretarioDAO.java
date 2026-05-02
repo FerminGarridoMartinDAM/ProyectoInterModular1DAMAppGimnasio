@@ -8,4 +8,5 @@ public interface SecretarioDAO {
     List<Secretario> selectAll();
     int update(Secretario secretario);
     int delete(int id);
+    Secretario selectById(int id);
 }
