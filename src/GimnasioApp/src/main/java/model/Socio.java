@@ -26,4 +26,9 @@ public class Socio extends Usuario {
     public String toString() {
         return super.toString() + " | [Socio -> Alta: " + fechaAlta + "]";
     }
+
+    public int getIidSocio() {  //Getter para puentear el IdEntrenador que me resultaba mas facil visualmente.
+        return super.getIdUsuario();
+    }
+
 }

@@ -29,9 +29,9 @@ public class Sesion {
 
 
 
+
+
     /*
-
-
      Para MANDAR a Supabase (Sacamos el dato convertido)
 
 public Timestamp getInicioAsTimestamp() {

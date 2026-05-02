@@ -24,4 +24,7 @@ public class Entrenador extends Usuario {
         // Al heredar, usamos los getters del padre para acceder al nombre, id, etc.
         return "Entrenador [" + getIdUsuario() + "] Nombre: " + getNombre() + " | Especialidad: " + especialidad;
     }
+    public int getIdEntrenador() {  //Getter para puentear el IdEntrenador que me resultaba mas facil visualmente.
+        return super.getIdUsuario();
+    }
 }

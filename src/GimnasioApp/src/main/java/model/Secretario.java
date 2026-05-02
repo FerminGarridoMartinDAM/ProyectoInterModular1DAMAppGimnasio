@@ -27,4 +27,9 @@ public class Secretario extends Usuario {
     public String toString() {
         return "Secretario [" + getIdUsuario() + "] Nombre: " + getNombre() + " | Turno: " + turno;
     }
+
+
+    public int getIdSecretario() {  //Getter para puentear el IdEntrenador que me resultaba mas facil visualmente.
+        return super.getIdUsuario();
+    }
 }
