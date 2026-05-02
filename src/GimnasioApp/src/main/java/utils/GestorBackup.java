@@ -3,8 +3,8 @@ package utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import database.SchemDB;
-import dto.MapsJsonDTO;
-import dto.ObjetosJavaDTO;
+import dto.GimnasioMapsJsonDTO;
+import dto.GimnasioObjetosJavaDTO;
 import model.*;
 import model.enums.EstadoUsuario;
 
@@ -23,15 +23,15 @@ import java.util.Map;
  * ========================================================================================
  * Esta clase es la "Aduana" de nuestro programa. Controla la frontera entre dos entornos:
  *
- * 1. INTERACCIÓN CON ARCHIVOS (MapsJsonDTO):
- *    Solo entiende texto plano (JSON). Aquí usamos nuestro 'MapsJsonDTO' (una clase
+ * 1. INTERACCIÓN CON ARCHIVOS (GimnasioMapsJsonDTO):
+ *    Solo entiende texto plano (JSON). Aquí usamos nuestro 'GimnasioMapsJsonDTO' (una clase
  *    cuya estructura interna son listas de Maps genéricos vacíos o llenos, exactamente
  *    igual a lo que recibiríamos al atacar una API REST). Esto permite que Gson pueda
  *    escribir y leer sin que le afecte la "Amnesia de Java" (Type Erasure).
  *
- * 2. INTERACCIÓN CON JAVA (ObjetosJavaDTO):
+ * 2. INTERACCIÓN CON JAVA (GimnasioObjetosJavaDTO):
  *    Entiende de clases, polimorfismo y fechas inteligentes. Aquí usamos nuestro
- *    'ObjetosJavaDTO' (una clase que agrupa listas de objetos instanciados reales) para
+ *    'GimnasioObjetosJavaDTO' (una clase que agrupa listas de objetos instanciados reales) para
  *    que el Controlador y los DAOs puedan trabajar cómodamente con tipado fuerte.
  * ======================================================================================== */
 public class GestorBackup {
@@ -40,10 +40,10 @@ public class GestorBackup {
     // 1. EL ESCRITOR (Método Privado separado para mayor limpieza)
     // =========================================================================
     /*
-     * Recibe el DTO estructurado en Maps crudos (MapsJsonDTO) ya preparado y se lo
+     * Recibe el DTO estructurado en Maps crudos (GimanasioMapsJsonDTO) ya preparado y se lo
      * entrega a Gson para que lo imprima físicamente en el disco duro.
      */
-    private void escribirArchivoJson(MapsJsonDTO dtoCrudo, String rutaDestino) {
+    private void escribirArchivoJson(GimnasioMapsJsonDTO gimnasioMapsJsonDTO, String rutaDestino) {
         // Configuramos Gson con Pretty Printing para que el JSON sea legible por humanos
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         FileWriter fileWriter = null;
@@ -51,7 +51,7 @@ public class GestorBackup {
         try {
             fileWriter = new FileWriter(rutaDestino);
             // Gson lee la estructura exacta del DTO y genera el archivo
-            gson.toJson(dtoCrudo, fileWriter);
+            gson.toJson(gimnasioMapsJsonDTO, fileWriter);
             System.out.println("✅ BACKUP GLOBAL EXITOSO EN: " + rutaDestino);
 
         } catch (IOException e) {
@@ -173,7 +173,7 @@ public class GestorBackup {
         }
 
         // 8. Construimos el DTO Externo: Insertamos las listas de Maps simulando la estructura de una API
-        MapsJsonDTO dtoCrudo = new MapsJsonDTO(
+        GimnasioMapsJsonDTO gimnasioMapsJsonDTO = new GimnasioMapsJsonDTO(
                 usuariosMapeados,
                 clasesMapeadas,
                 sesionesMapeadas,
@@ -183,7 +183,7 @@ public class GestorBackup {
         );
 
         // 9. Arrancamos el motor de escritura
-        escribirArchivoJson(dtoCrudo, "src/main/resources/backup_gimnasio.json");
+        escribirArchivoJson(gimnasioMapsJsonDTO, "src/main/resources/backup_gimnasio.json");
     }
 
     // --- Métodos Auxiliares de Despiece (Evitando engordar el bucle principal) ---
@@ -207,35 +207,35 @@ public class GestorBackup {
     // 3. IMPORTAR: DE TEXTO CRUDO A OBJETOS VIVOS (Lectura y Resurrección)
     // =========================================================================
     /*
-     * El proceso inverso. Gson lee el archivo y nos devuelve la clase 'MapsJsonDTO'
+     * El proceso inverso. Gson lee el archivo y nos devuelve la clase 'GimnasioMapsJsonDTO'
      * (funciona exactamente como cuando consumimos el JSON de una API externa).
      * Nosotros iteramos esos Maps crudos, hacemos los 'new Clase()' correspondientes
      * usando LocalDate.parse() para revivir las fechas, y finalmente empaquetamos
-     * todo en la clase 'ObjetosJavaDTO' para el Controlador.
+     * todo en la clase 'GimnasioObjetosJavaDTO' para el Controlador.
      */
-    public ObjetosJavaDTO importarBackup() {
+    public GimnasioObjetosJavaDTO importarBackup() {
         Gson gson = new Gson();
         String ruta = "src/main/resources/backup_gimnasio.json";
 
         // 1. Preparamos el DTO final de objetos instanciados. Si el archivo no existe,
         // devolvemos esto vacío para evitar NullPointerExceptions en el Controlador.
-        ObjetosJavaDTO dtoVivo = new ObjetosJavaDTO();
+        GimnasioObjetosJavaDTO dtoVivo = new GimnasioObjetosJavaDTO();
         FileReader fileReader = null;
 
         try {
             fileReader = new FileReader(ruta);
 
-            // 2. LEER DE GSON: Al usar nuestro MapsJsonDTO, Gson usa Reflexión y
+            // 2. LEER DE GSON: Al usar nuestro GimnasioMapsJsonDTO, Gson usa Reflexión y
             // nos rellena las listas de Maps sin necesidad de TypeTokens horribles.
-            MapsJsonDTO dtoCrudo = gson.fromJson(fileReader, MapsJsonDTO.class);
+            GimnasioMapsJsonDTO gimnasioMapsJsonDTO = gson.fromJson(fileReader, GimnasioMapsJsonDTO.class);
 
-            if (dtoCrudo != null) {
+            if (gimnasioMapsJsonDTO != null) {
 
                 // --- 3. RECONSTRUIR USUARIOS ---
-                if (dtoCrudo.getTablaUsuarios() != null) {
+                if (gimnasioMapsJsonDTO.getTablaUsuarios() != null) {
                     List<Usuario> usuariosRecuperados = new ArrayList<>();
 
-                    for (Map<String, Object> datos : dtoCrudo.getTablaUsuarios()) {
+                    for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaUsuarios()) {
                         // Gson lee los números como Double genéricos, forzamos la bajada a int
                         int id = ((Double) datos.get(SchemDB.COL_USUARIO_ID)).intValue();
                         String nombre = (String) datos.get(SchemDB.COL_USUARIO_NOMBRE);
@@ -260,45 +260,45 @@ public class GestorBackup {
                 }
 
                 // --- 4. RECONSTRUIR CLASES ---
-                if (dtoCrudo.getTablaClases() != null) {
+                if (gimnasioMapsJsonDTO.getTablaClases() != null) {
                     List<Clase> clasesRecuperadas = new ArrayList<>();
-                    for (Map<String, Object> datos : dtoCrudo.getTablaClases()) {
+                    for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaClases()) {
                         clasesRecuperadas.add(reconstruirClase(datos));
                     }
                     dtoVivo.setClases(clasesRecuperadas);
                 }
 
                 // --- 5. RECONSTRUIR SESIONES ---
-                if (dtoCrudo.getTablaSesiones() != null) {
+                if (gimnasioMapsJsonDTO.getTablaSesiones() != null) {
                     List<Sesion> sesionesRecuperadas = new ArrayList<>();
-                    for (Map<String, Object> datos : dtoCrudo.getTablaSesiones()) {
+                    for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaSesiones()) {
                         sesionesRecuperadas.add(reconstruirSesion(datos));
                     }
                     dtoVivo.setSesiones(sesionesRecuperadas);
                 }
 
                 // --- 6. RECONSTRUIR PLANES ---
-                if (dtoCrudo.getTablaPlanes() != null) {
+                if (gimnasioMapsJsonDTO.getTablaPlanes() != null) {
                     List<Plan> planesRecuperados = new ArrayList<>();
-                    for (Map<String, Object> datos : dtoCrudo.getTablaPlanes()) {
+                    for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaPlanes()) {
                         planesRecuperados.add(reconstruirPlan(datos));
                     }
                     dtoVivo.setPlanes(planesRecuperados);
                 }
 
                 // --- 7. RECONSTRUIR SUSCRIPCIONES ---
-                if (dtoCrudo.getTablaSuscripciones() != null) {
+                if (gimnasioMapsJsonDTO.getTablaSuscripciones() != null) {
                     List<Suscripcion> suscripcionesRecuperadas = new ArrayList<>();
-                    for (Map<String, Object> datos : dtoCrudo.getTablaSuscripciones()) {
+                    for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaSuscripciones()) {
                         suscripcionesRecuperadas.add(reconstruirSuscripcion(datos));
                     }
                     dtoVivo.setSuscripciones(suscripcionesRecuperadas);
                 }
 
                 // --- 8. RECONSTRUIR RESERVAS ---
-                if (dtoCrudo.getTablaReservas() != null) {
+                if (gimnasioMapsJsonDTO.getTablaReservas() != null) {
                     List<Reserva> reservasRecuperadas = new ArrayList<>();
-                    for (Map<String, Object> datos : dtoCrudo.getTablaReservas()) {
+                    for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaReservas()) {
                         reservasRecuperadas.add(reconstruirReserva(datos));
                     }
                     dtoVivo.setReservas(reservasRecuperadas);
