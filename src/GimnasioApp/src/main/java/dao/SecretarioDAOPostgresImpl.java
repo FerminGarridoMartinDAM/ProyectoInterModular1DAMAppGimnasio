@@ -146,6 +146,58 @@ public class SecretarioDAOPostgresImpl implements SecretarioDAO {
         return listaSecretarios;
     }
 
+
+    @Override
+    public Secretario selectById(int id) {
+        Secretario secretarioEncontrado = null;
+
+        /* GUÍA DE ESTUDIO: SELECT BY ID PARA SECRETARIO
+         *  Misma lógica que con el Socio: unimos la tabla padre (usuario)
+         *  con la tabla hija (secretario) mediante INNER JOIN.
+         *  Filtramos por la Clave Primaria para asegurar que nos devuelva 1 o 0 resultados.
+         */
+        String query = String.format("SELECT * FROM %s u INNER JOIN %s s ON u.%s = s.%s WHERE u.%s = ?",
+                SchemDB.TAB_USUARIO, SchemDB.TAB_SECRETARIO,
+                SchemDB.COL_USUARIO_ID, SchemDB.COL_USUARIO_ID,
+                SchemDB.COL_USUARIO_ID);
+
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            // Inyectamos el ID que queremos buscar
+            preparedStatement.setInt(1, id);
+
+            resultSet = preparedStatement.executeQuery();
+
+            // Usamos 'if' porque, al buscar por ID, solo habrá un resultado o ninguno.
+            if (resultSet.next()) {
+
+                // --- DATOS DEL PADRE (Usuario) ---
+                EstadoUsuario estado = EstadoUsuario.valueOf(resultSet.getString(SchemDB.COL_USUARIO_ESTADO).trim().toUpperCase());
+                String nombre = resultSet.getString(SchemDB.COL_USUARIO_NOMBRE);
+                String apellido = resultSet.getString(SchemDB.COL_USUARIO_APELLIDO);
+                String email = resultSet.getString(SchemDB.COL_USUARIO_EMAIL);
+                String password = resultSet.getString(SchemDB.COL_USUARIO_PASSWORD);
+                String telefono = resultSet.getString(SchemDB.COL_USUARIO_TELEFONO);
+
+                // --- DATOS DEL HIJO (Secretario) ---
+                // Aquí la extracción es mucho más directa que con la fecha del Socio,
+                // ya que el turno es un simple texto (String).
+                String turno = resultSet.getString(SchemDB.COL_SECRETARIO_TURNO);
+
+                // Construimos el objeto completo usando el constructor del Secretario
+                secretarioEncontrado = new Secretario(id, estado, nombre, apellido, email, password, telefono, turno);
+            }
+        } catch (SQLException e) {
+            System.out.println("❌ ERROR (selectById secretario): " + e.getMessage());
+        }
+
+        // Si lo encuentra, devuelve el objeto lleno. Si no existe ese ID, devuelve null.
+        return secretarioEncontrado;
+    }
+
+
+
+
     @Override
     public int update(Secretario secretario) {
         // Para actualizar también necesitamos preparar dos consultas porque los datos están divididos
