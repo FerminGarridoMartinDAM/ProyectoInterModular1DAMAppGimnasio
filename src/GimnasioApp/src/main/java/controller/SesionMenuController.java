@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.Scanner;
 
 /* ========================================================================================
- * GUÍA DE ESTUDIO: EL MENÚ DE SESIONES (AUTORIZACIÓN)
+ * MENU PARA GESTION DE SESIONES.
  * ========================================================================================
  * OBJETIVO DE ESTA CLASE:
  * Gestiona las sesiones, y dependiendo del tipo de usuario le da unas funcionalidades u otras.

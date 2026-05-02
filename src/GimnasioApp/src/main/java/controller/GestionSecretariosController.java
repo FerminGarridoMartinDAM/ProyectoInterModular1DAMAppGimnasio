@@ -28,7 +28,7 @@ public class GestionSecretariosController {
         this.usuarioActual = usuarioActual;
     }
 
-    public void mostrar() {
+    public void mostrarMenu() {
         int opcionMenu = -1;
 
         do {

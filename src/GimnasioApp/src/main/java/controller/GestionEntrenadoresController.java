@@ -39,7 +39,7 @@ public class GestionEntrenadoresController {
 
 
 
-        public void mostrar() {
+        public void mostrarMenu() {
             int opcionMenu = -1;
 
             do {

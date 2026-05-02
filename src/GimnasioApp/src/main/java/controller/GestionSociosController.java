@@ -16,7 +16,7 @@ import java.util.Scanner;
 
 
 /* ========================================================================================
- * GUÍA DE ESTUDIO: SOFT DELETE VS HARD DELETE
+ * CONTROLADOR PARA GESTIONAR A LOS ENTRENADORES
  * ========================================================================================
  * OBJETIVO: Gestionar el ciclo de vida de los clientes (Socios) del gimnasio.
  *
@@ -44,7 +44,7 @@ public class GestionSociosController {
         this.usuarioActual = usuarioActual;
     }
 
-    public void mostrar() {
+    public void mostrarMenu() {
         int opcionMenu = -1;
 
         do {
@@ -196,7 +196,7 @@ public class GestionSociosController {
 
     // --- OPCIÓN 4: BORRADO FÍSICO (HARD DELETE ) --- Aqui si se borra el usuario permanente
     private void borradoPermanenteSocio() {
-        System.out.println("\n---  BORRADO PERMANENTE DE SOCIO  ---");
+        System.out.println("\n--- ☢️ BORRADO PERMANENTE DE SOCIO ☢️ ---");
 
         // ADUANA DE SEGURIDAD: Solo pasas si eres un Admin . Ahora no hace falta porque he puesto que la opcion solo se vea si erea admin
         // Pero se deja como capa de seguridad.
