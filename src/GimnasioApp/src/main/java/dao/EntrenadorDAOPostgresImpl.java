@@ -109,6 +109,49 @@ public class EntrenadorDAOPostgresImpl implements EntrenadorDAO {
         }
         return listaEntrenadores;
     }
+    @Override
+    public Entrenador selectById(int id) {
+        Entrenador entrenadorEncontrado = null;
+
+        // Hacemos un JOIN entre la tabla madre (Usuario) y la hija (Entrenador)
+        // y filtramos para que solo nos traiga el que coincide con el ID que le pasamos.
+        String query = String.format("SELECT * FROM %s u INNER JOIN %s e ON u.%s = e.%s WHERE u.%s = ?",
+                SchemDB.TAB_USUARIO, SchemDB.TAB_ENTRENADOR,
+                SchemDB.COL_USUARIO_ID, SchemDB.COL_USUARIO_ID,
+                SchemDB.COL_USUARIO_ID);
+
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, id);
+
+            resultSet = preparedStatement.executeQuery();
+
+            // Usamos 'if' en vez de 'while' porque al buscar por Clave Primaria (ID),
+            // sabemos seguro que nos va a devolver 1 resultado o ninguno.
+            if (resultSet.next()) {
+
+                // Parseamos el estado con nuestro Enum
+                EstadoUsuario estado = EstadoUsuario.valueOf(resultSet.getString(SchemDB.COL_USUARIO_ESTADO).trim().toUpperCase());
+
+                // Recogemos los datos de la tabla madre (Usuario)
+                String nombre = resultSet.getString(SchemDB.COL_USUARIO_NOMBRE);
+                String apellido = resultSet.getString(SchemDB.COL_USUARIO_APELLIDO);
+                String email = resultSet.getString(SchemDB.COL_USUARIO_EMAIL);
+                String password = resultSet.getString(SchemDB.COL_USUARIO_PASSWORD);
+                String telefono = resultSet.getString(SchemDB.COL_USUARIO_TELEFONO);
+
+                // Recogemos los datos de la tabla hija (Entrenador)
+                String especialidad = resultSet.getString(SchemDB.COL_ENTRENADOR_ESPECIALIDAD);
+
+                // Construimos el objeto completo con los datos de ambas tablas
+                entrenadorEncontrado = new Entrenador(id, estado, nombre, apellido, email, password, telefono, especialidad);
+            }
+        } catch (SQLException e) {
+            System.out.println("❌ ERROR (selectById entrenador): " + e.getMessage());
+        }
+
+        return entrenadorEncontrado;
+    }
 
     @Override
     public int update(Entrenador entrenador) {

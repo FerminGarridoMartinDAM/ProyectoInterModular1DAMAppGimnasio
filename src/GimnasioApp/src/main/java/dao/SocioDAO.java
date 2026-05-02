@@ -8,4 +8,5 @@ public interface SocioDAO {
     List<Socio> selectAll();
     int update(Socio socio);
     int delete(int id);
+    Socio selectById(int idSocio);
 }

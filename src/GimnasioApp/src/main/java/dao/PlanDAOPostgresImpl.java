@@ -60,8 +60,8 @@ public class PlanDAOPostgresImpl implements PlanDAO {
                 int id = resultSet.getInt(SchemDB.COL_PLAN_ID);
                 String nombre = resultSet.getString(SchemDB.COL_PLAN_NOMBRE);
                 double precio = resultSet.getDouble(SchemDB.COL_PLAN_PRECIO);
-                EstadoPlan estado = EstadoPlan.valueOf(resultSet.getString(SchemDB.COL_RES_ESTADO).trim().toUpperCase());
-                //String estadoStr = resultSet.getString(SchemDB.COL_PLAN_ESTADO);
+                EstadoPlan estado = EstadoPlan.valueOf(resultSet.getString(SchemDB.COL_PLAN_ESTADO).trim().toUpperCase());
+             //En claseDAOPostgres selectALL esta explicado este parseo por si lo quiero revisar
 
                 listaPlanes.add(new Plan(id, estado, nombre, precio));
             }
@@ -69,6 +69,41 @@ public class PlanDAOPostgresImpl implements PlanDAO {
             System.out.println("❌ ERROR (selectAll): " + e.getMessage());
         }
         return listaPlanes;
+    }
+
+    @Override
+    public Plan selectById(int id) {
+        Plan planEncontrado = null;
+        /* - Usamos el constructor vacío de Lombok y rellenamos por Setters
+         * El BigDecimal: usamos 'getDouble' para el precio. los double a veces tienen fallos
+         *    de redondeo (ej. 2.999999999). Si este software fuera para un banco
+         *    o facturación avanzada, usaríamos 'resultSet.getBigDecimal()' y la
+         *    clase 'java.math.BigDecimal' en nuestro modelo en lugar de 'double'.
+        */
+
+        String query = String.format("SELECT * FROM %s WHERE %s = ?",
+                SchemDB.TAB_PLAN, SchemDB.COL_PLAN_ID);
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, id);
+
+            resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+
+                planEncontrado = new Plan();
+                //  Rellenamos datos numéricos y de texto
+                planEncontrado.setIdPlan(resultSet.getInt(SchemDB.COL_PLAN_ID));
+                planEncontrado.setNombre(resultSet.getString(SchemDB.COL_PLAN_NOMBRE));
+                planEncontrado.setPrecioMensual(resultSet.getDouble(SchemDB.COL_PLAN_PRECIO));
+                // Parseamos el Enum asegurándonos de limpiar el String
+                planEncontrado.setEstado(EstadoPlan.valueOf(resultSet.getString(SchemDB.COL_PLAN_ESTADO).trim().toUpperCase()));
+            }
+        } catch (SQLException e) {
+            System.out.println("❌ ERROR (selectById plan): " + e.getMessage());
+        }
+
+        return planEncontrado;
     }
 
     @Override

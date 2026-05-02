@@ -11,4 +11,5 @@ public interface ClaseDAO {
     int update(Clase clase);
     int actualizarEstado(int id, EstadoClase nuevoEstado);
     int delete(int id);
+    Clase selectById(int id);
 }

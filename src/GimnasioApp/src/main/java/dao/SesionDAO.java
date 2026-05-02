@@ -8,4 +8,5 @@ public interface SesionDAO {
     List<Sesion> selectAll();
     int update(Sesion sesion);
     int delete(int id);
+    Sesion selectById(int id);
 }

@@ -60,8 +60,11 @@ public class ClaseDAOPostgresImpl implements ClaseDAO {
                 int id = resultSet.getInt(SchemDB.COL_CLASE_ID);
                 String nombre = resultSet.getString(SchemDB.COL_CLASE_NOMBRE);
                 int aforo = resultSet.getInt(SchemDB.COL_CLASE_AFORO);
-                EstadoClase estado = EstadoClase.valueOf(resultSet.getString(SchemDB.COL_USUARIO_ESTADO).trim().toUpperCase());
-                //String estadoStr = resultSet.getString(SchemDB.COL_CLASE_ESTADO);
+                //AQui hemos parseado directamente estado a estado porque Postgree nos devuelve un String.
+                EstadoClase estado = EstadoClase.valueOf(resultSet.getString(SchemDB.COL_CLASE_ESTADO).trim().toUpperCase());
+                //Y esto es lo mismo pero en 2 pasos primero geteamos el String y luego lo parseamos Estadoclase
+                //String estadoString = resultSet.getString(SchemDB.COL_CLASE_ESTADO);
+                //EstadoClase estado = EstadoClase.valueOf(estadoString.trim().toUpperCase());
 
                 listaClases.add(new Clase(id, estado, nombre, aforo));
             }
@@ -69,6 +72,54 @@ public class ClaseDAOPostgresImpl implements ClaseDAO {
             System.out.println("❌ ERROR (selectAll): " + e.getMessage());
         }
         return listaClases;
+    }
+    @Override
+    public Clase selectById(int id) {
+        /* BÚSQUEDA SIMPLE POR PRIMARY KEY
+         *
+         * Al ser una tabla plana (sin herencia), la consulta es directa.
+         * Buscamos la fila cuyo ID coincida con el número que pasamos por parámetro.
+         *
+         *
+         * Next Level (Optimización): En tablas de catálogo (que cambian muy poco,
+         *    como la lista de clases), a veces en lugar de ir a la BD cada vez,
+         *    se carga la lista entera una sola vez al arrancar el programa y se
+         *    guarda en un 'HashMap' en la RAM (Caché). Así el 'selectById'
+         *    sería instantáneo sin tocar SQL. Si la tabla fuera enorme no merece la pena. Pero para una tabla de este tamaño si.
+         *    Tambien importante , si esta clase fuera muy dinamica tampoco se puede cargar en el HashMap porque no estaria actualizada.
+         * ========================================================================== */
+        Clase clase = null;
+
+        String query = String.format("SELECT * FROM %s WHERE %s = ?",
+                SchemDB.TAB_CLASE, SchemDB.COL_CLASE_ID);
+
+        try {
+            // Preparamos la consulta para evitar Inyección SQL
+            preparedStatement = connection.prepareStatement(query);
+
+            // Sustituimos la interrogación por el ID que queremos buscar
+            preparedStatement.setInt(1, id);
+
+            // Ejecutamos la lectura
+            resultSet = preparedStatement.executeQuery();
+
+            // Usamos 'if' porque es imposible que haya dos clases con el mismo ID
+            if (resultSet.next()) {
+                // 1. Creamos la "caja vacía" gracias a @NoArgsConstructor de Lombok
+                clase = new Clase();
+
+                // 2. Rellenamos todos los atributos uno a uno usando los Setters
+                clase.setIdClase(resultSet.getInt(SchemDB.COL_CLASE_ID));
+                clase.setNombre(resultSet.getString(SchemDB.COL_CLASE_NOMBRE));
+                clase.setAforoMax(resultSet.getInt(SchemDB.COL_CLASE_AFORO));
+                // Parseamos el String de la BD a nuestro Enum de Java // Si queremos simplificar podemos odviar esta linea y que no nos devuelva el estado, pero voy a traerlo entero.
+                clase.setEstado(EstadoClase.valueOf(resultSet.getString(SchemDB.COL_CLASE_ESTADO).trim().toUpperCase()));
+            }
+        } catch (SQLException e) {
+            System.out.println("❌ ERROR (selectById clase): " + e.getMessage());
+        }
+        // Devolverá el objeto si lo encontró, o 'null' si ese ID no existe en el catálogo
+        return clase;
     }
 
     @Override

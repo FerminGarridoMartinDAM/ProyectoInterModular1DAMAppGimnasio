@@ -83,6 +83,48 @@ public class SuscripcionDAOPostgresImpl implements SuscripcionDAO {
         }
         return listaSuscripciones;
     }
+    @Override
+    public Suscripcion selectById(int id) {
+        Suscripcion suscripcionEncontrada = null;
+
+
+
+        String query = String.format("SELECT * FROM %s WHERE %s = ?",
+                SchemDB.TAB_SUSCRIPCION, SchemDB.COL_SUSC_ID);
+
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, id);
+
+            resultSet = preparedStatement.executeQuery();
+
+            // Usamos 'if' porque la búsqueda por Primary Key devuelve 1 fila o ninguna
+            if (resultSet.next()) {
+                // 1. Instanciamos la "caja vacía" gracias a Lombok
+                suscripcionEncontrada = new Suscripcion();
+
+                //  Rellenamos datos básicos y Foreign Keys (FKs)
+                suscripcionEncontrada.setIdSuscripcion(resultSet.getInt(SchemDB.COL_SUSC_ID));
+                suscripcionEncontrada.setIdPlan(resultSet.getInt(SchemDB.COL_SUSC_PLAN));
+                suscripcionEncontrada.setIdSocio(resultSet.getInt(SchemDB.COL_SUSC_SOCIO));
+
+                // Parseamos el Enum (asegurándonos de limpiar espacios ocultos)
+                suscripcionEncontrada.setEstado(EstadoSuscripcion.valueOf(
+                        resultSet.getString(SchemDB.COL_SUSC_ESTADO).trim().toUpperCase()
+                ));
+
+                //Traducción de Fechas (SQL Date -> Java LocalDate)
+                suscripcionEncontrada.setFechaInicio(resultSet.getDate(SchemDB.COL_SUSC_INICIO).toLocalDate());
+                suscripcionEncontrada.setFechaFin(resultSet.getDate(SchemDB.COL_SUSC_FIN).toLocalDate());
+            }
+        } catch (SQLException e) {
+            System.out.println("❌ ERROR (selectById suscripcion): " + e.getMessage());
+        }
+
+        // Devuelve el objeto montado o 'null' si no existe el ID
+        return suscripcionEncontrada;
+    }
+
 
     @Override
     public int update(Suscripcion suscripcion) {

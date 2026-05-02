@@ -8,4 +8,5 @@ public interface EntrenadorDAO {
     List<Entrenador> selectAll();
     int update(Entrenador entrenador);
     int delete(int id);
+    Entrenador selectById(int id);
 }

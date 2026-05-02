@@ -87,6 +87,42 @@ public class SesionDAOPostgresImpl implements SesionDAO {
         return listaSesiones;
     }
 
+
+    @Override
+    public Sesion selectById(int id) {
+        Sesion sesionEncontrada = null;
+
+        //Creamos la query que nos trae todas las sesiones por id (como solo le damos un id pues todas las que coincidan con ese id, que debe ser una)
+        String query = String.format("SELECT * FROM %s WHERE %s = ?",
+                SchemDB.TAB_SESION, SchemDB.COL_SESION_ID);
+
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, id);
+
+            resultSet = preparedStatement.executeQuery();
+
+            // Si hay un resultado, construimos el objeto Sesion , se usa if en vez de while porque si nos da resultado nos da un solo resultado .
+            if (resultSet.next()) {
+                int idEntrenador = resultSet.getInt(SchemDB.COL_SESION_ENTRENADOR);
+                int idClase = resultSet.getInt(SchemDB.COL_SESION_CLASE);
+                EstadoSesion estado = EstadoSesion.valueOf(resultSet.getString(SchemDB.COL_SESION_ESTADO).trim().toUpperCase());
+                String sala = resultSet.getString(SchemDB.COL_SESION_SALA);
+
+                // Convertimos el Timestamp que nos da Supabase a LocalDateTime
+                LocalDateTime inicio = resultSet.getTimestamp(SchemDB.COL_SESION_INICIO).toLocalDateTime();
+                LocalDateTime fin = resultSet.getTimestamp(SchemDB.COL_SESION_FIN).toLocalDateTime();
+
+                // Instanciamos el objeto con los datos recuperados
+                sesionEncontrada = new Sesion(id, idEntrenador, idClase, estado, sala, inicio, fin);
+            }
+        } catch (SQLException e) {
+            System.out.println("❌ ERROR (obtenerSesionPorId): " + e.getMessage());
+        }
+
+        return sesionEncontrada;
+    }
+
     @Override
     public int update(Sesion sesion) {
         String query = String.format("UPDATE %s SET %s=?, %s=?, %s=?, %s=?, %s=?, %s=? WHERE %s=?",
@@ -134,4 +170,7 @@ public class SesionDAOPostgresImpl implements SesionDAO {
         }
         return -1;
     }
+
+
+
 }

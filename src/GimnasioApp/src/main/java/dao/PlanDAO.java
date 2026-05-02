@@ -10,4 +10,5 @@ public interface PlanDAO {
      int update(Plan plan);
     int actualizarEstado(int id, EstadoPlan nuevoEstado);
     int delete(int id);
+    Plan selectById(int id);
 }

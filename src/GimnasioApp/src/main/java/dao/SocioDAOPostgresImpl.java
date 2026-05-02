@@ -125,7 +125,7 @@ public class SocioDAOPostgresImpl implements SocioDAO {
                 int id = resultSet.getInt(SchemDB.COL_USUARIO_ID);
 
 
-               // String estadoStr = resultSet.getString(SchemDB.COL_USUARIO_ESTADO);
+                // String estadoStr = resultSet.getString(SchemDB.COL_USUARIO_ESTADO);
                 EstadoUsuario estado = EstadoUsuario.valueOf(resultSet.getString(SchemDB.COL_USUARIO_ESTADO).trim().toUpperCase()); // Parseo directamente aqui , me resulta mas facil de ver que luego al crear socio y añadirlo a lista.
                 String nombre = resultSet.getString(SchemDB.COL_USUARIO_NOMBRE);
                 String apellido = resultSet.getString(SchemDB.COL_USUARIO_APELLIDO);
@@ -147,6 +147,52 @@ public class SocioDAOPostgresImpl implements SocioDAO {
         return listaSocios;
     }
 
+    @Override
+    public Socio selectById(int id) {
+        Socio socioEncontrado = null;
+
+        /* GUÍA DE ESTUDIO: SELECT BY ID CON HERENCIA
+         *  Hacemos el mismo INNER JOIN que en selectAll para juntar las dos tablas.
+         *  Añadimos la cláusula WHERE apuntando a la Clave Primaria (u.id_usuario = ?).
+         * Al buscar por Clave Primaria, garantizamos que el resultado será 1 fila o ninguna.
+         */
+        String query = String.format("SELECT * FROM %s u INNER JOIN %s s ON u.%s = s.%s WHERE u.%s = ?",
+                SchemDB.TAB_USUARIO, SchemDB.TAB_SOCIO,
+                SchemDB.COL_USUARIO_ID, SchemDB.COL_USUARIO_ID,
+                SchemDB.COL_USUARIO_ID);
+
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            // Inyectamos el ID que queremos buscar
+            preparedStatement.setInt(1, id);
+
+            resultSet = preparedStatement.executeQuery();
+
+            // Usamos 'if' en lugar de 'while'. Como buscamos por ID, si hay coincidencia
+            // solo habrá un resultado. No hace falta un bucle.
+            if (resultSet.next()) {
+
+                // --- DATOS DEL PADRE (Usuario) ---
+                EstadoUsuario estado = EstadoUsuario.valueOf(resultSet.getString(SchemDB.COL_USUARIO_ESTADO).trim().toUpperCase());
+                String nombre = resultSet.getString(SchemDB.COL_USUARIO_NOMBRE);
+                String apellido = resultSet.getString(SchemDB.COL_USUARIO_APELLIDO);
+                String email = resultSet.getString(SchemDB.COL_USUARIO_EMAIL);
+                String password = resultSet.getString(SchemDB.COL_USUARIO_PASSWORD);
+                String telefono = resultSet.getString(SchemDB.COL_USUARIO_TELEFONO);
+
+                // --- DATOS DEL HIJO (Socio) ---
+                LocalDate fechaAlta = resultSet.getDate(SchemDB.COL_SOCIO_FECHA_ALTA).toLocalDate();
+
+                // Construimos el objeto completo y lo guardamos en nuestra variable
+                socioEncontrado = new Socio(id, estado, nombre, apellido, email, password, telefono, fechaAlta);
+            }
+        } catch (SQLException e) {
+            System.out.println("❌ ERROR (selectById socio): " + e.getMessage());
+        }
+
+        // Si lo encuentra, devuelve el objeto lleno. Si no existe ese ID, devuelve null.
+        return socioEncontrado;
+    }
 
 
     @Override
@@ -190,16 +236,17 @@ public class SocioDAOPostgresImpl implements SocioDAO {
             try {
                 // Si el Update de Socio falla (ej. formato de fecha inválido), deshacemos el Update de Usuario
                 if (connection != null) connection.rollback();
-            } catch (SQLException ex) { }
+            } catch (SQLException ex) {
+            }
         } finally {
             try {
                 // Volvemos a dejar la conexión en su estado habitual
                 if (connection != null) connection.setAutoCommit(true);
-            } catch (SQLException e) { }
+            } catch (SQLException e) {
+            }
         }
         return -1;
     }
-
 
 
     @Override
@@ -236,19 +283,16 @@ public class SocioDAOPostgresImpl implements SocioDAO {
             try {
                 // Si borramos al hijo, pero falla el borrado del padre, hacemos Control+Z y el hijo "resucita"
                 if (connection != null) connection.rollback();
-            } catch (SQLException ex) { }
+            } catch (SQLException ex) {
+            }
         } finally {
             try {
                 if (connection != null) connection.setAutoCommit(true);
-            } catch (SQLException e) { }
+            } catch (SQLException e) {
+            }
         }
         return -1;
 
 
     }
-
-
-
-
-
 }
