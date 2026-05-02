@@ -8,7 +8,12 @@ import model.enums.EstadoUsuario;
 import utils.ValidadorFechas;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Scanner;
+
+
+
+
 
 /* ========================================================================================
  * GUÍA DE ESTUDIO: SOFT DELETE VS HARD DELETE
@@ -44,11 +49,12 @@ public class GestionSociosController {
 
         do {
             System.out.println("\n--- GESTIÓN DE SOCIOS ---");
-            System.out.println("1. Alta de nuevo socio");
-            System.out.println("2. Dar de baja a un socio (Desactivar)");
+            System.out.println("1. Mostrar lista de todos los socios");
+            System.out.println("2. Alta de nuevo socio");
+            System.out.println("3. Dar de baja a un socio (Desactivar)");
             //Esta opcion solo sale si es un admin.
             if (usuarioActual instanceof Admin) {
-                System.out.println("3. Borrado permanente de un socio");
+                System.out.println(". Borrado permanente de un socio");
             }
             System.out.println("0. Volver al menú anterior");
             System.out.print("Selección: ");
@@ -58,12 +64,15 @@ public class GestionSociosController {
 
                 switch (opcionMenu) {
                     case 1:
-                        altaSocio();
+                        mostrarTodosLosSocios();
                         break;
                     case 2:
-                        bajaLogicaSocio();
+                        altaSocio();
                         break;
                     case 3:
+                        bajaLogicaSocio();
+                        break;
+                    case 4:
                         //Y aqui lo mismo solo si es admin  deja usar la opcion 3.
                         if (usuarioActual instanceof Admin) {
                             borradoPermanenteSocio();
@@ -83,10 +92,40 @@ public class GestionSociosController {
     }
 
     // ====================================================================================
-    // ZONA DE LÓGICA DE NEGOCIO
+    // METODOS DEL MENU
     // ====================================================================================
 
-    // --- OPCIÓN 1: ALTA ---
+
+    // --- OPCIÓN 1: MOSTRAR TODOS ---
+    private void mostrarTodosLosSocios() {
+        System.out.println("\n--- LISTADO DE SOCIOS ---");
+
+        // 1. Traemos los socios del DAO.
+
+        List<Socio> listaSocios = socioDAO.selectAll();
+
+        // 2. Comprobamos si la lista está vacía
+        if (listaSocios.isEmpty()) {
+            System.out.println("ℹ️ No hay ningún socio registrado en la base de datos en este momento.");
+        } else {
+            // 3. Recorremos la lista y la imprimimos de forma limpia
+            System.out.println("ID  | ESTADO   | NOMBRE Y APELLIDO | EMAIL | ALTA");
+            System.out.println("------------------------------------------------------------------");
+
+            for (Socio socio : listaSocios) {
+                System.out.printf("%-3d | %-8s | %s %s | %s | %s\n",
+                        socio.getIdUsuario(),
+                        socio.getEstado(),
+                        socio.getNombre(),
+                        socio.getApellido(),
+                        socio.getEmail(),
+                        socio.getFechaAlta());
+            }
+            System.out.println("------------------------------------------------------------------");
+        }
+    }
+
+    // --- OPCIÓN 2: ALTA ---
     private void altaSocio() {
         System.out.println("\n--- ALTA DE NUEVO SOCIO ---");
         Socio nuevoSocio = new Socio();
@@ -125,7 +164,7 @@ public class GestionSociosController {
         }
     }
 
-    // --- OPCIÓN 2: BAJA LÓGICA (SOFT DELETE) ---  en vez de hacerle un borrado permanente lo dejamos en inactivo por si necesitamos sus datos para algo.
+    // --- OPCIÓN 3: BAJA LÓGICA (SOFT DELETE) ---  en vez de hacerle un borrado permanente lo dejamos en inactivo por si necesitamos sus datos para algo.
     private void bajaLogicaSocio() {
         System.out.println("\n--- BAJA DE SOCIO (DESACTIVACIÓN) ---");
         System.out.print("Introduce el ID del socio a dar de baja: ");
@@ -155,7 +194,7 @@ public class GestionSociosController {
         }
     }
 
-    // --- OPCIÓN 3: BORRADO FÍSICO (HARD DELETE ) --- Aqui si se borra el usuario permanente
+    // --- OPCIÓN 4: BORRADO FÍSICO (HARD DELETE ) --- Aqui si se borra el usuario permanente
     private void borradoPermanenteSocio() {
         System.out.println("\n---  BORRADO PERMANENTE DE SOCIO  ---");
 
