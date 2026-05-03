@@ -3,9 +3,9 @@ package controller;
 import dao.ClaseDAO;
 import dao.EntrenadorDAO;
 import dao.SesionDAO;
+import model.Entrenador;
 import model.Sesion;
 import model.Usuario;
-import model.Entrenador;
 import model.enums.SalaGimnasio;
 import utils.ValidadorFechas;
 
@@ -24,7 +24,7 @@ import java.util.Scanner;
  *    borrar nada, verifica quién es el usuario.
  * ========================================================================================
  */
-public class SesionMenuController {
+public class GestionSesionController {
 
     private SesionDAO sesionDAO;
     private ClaseDAO claseDAO;
@@ -34,7 +34,7 @@ public class SesionMenuController {
     private Usuario usuarioActual;
 
 
-    public SesionMenuController(SesionDAO sesionDAO, ClaseDAO claseDAO, EntrenadorDAO entrenadorDAO, Scanner teclado, Usuario usuarioActual) {
+    public GestionSesionController(SesionDAO sesionDAO, ClaseDAO claseDAO, EntrenadorDAO entrenadorDAO, Scanner teclado, Usuario usuarioActual) {
         this.sesionDAO = sesionDAO;
         this.claseDAO = claseDAO;
         this.entrenadorDAO = entrenadorDAO;
@@ -118,7 +118,31 @@ public class SesionMenuController {
     }
 
     // --- OPCIÓN 3 ---
+    //Dejo comentado el metodo que tenia antes de crear el util para ver la diferencia,
     private void reprogramarSesionExistente() {
+        System.out.println("\n--- REPROGRAMAR SESIÓN ---");
+
+        int idSesionAModificar = utils.LectorConsola.leerIdConCancelacion(teclado, "ID de la sesión a modificar");
+
+        if (idSesionAModificar <= 0) return;
+
+        Sesion sesionAModificar = new Sesion();
+        sesionAModificar.setIdSesion(idSesionAModificar);
+
+        // Reutilizamos el formulario para pedir los nuevos datos
+        sesionAModificar = rellenarDatosSesion(sesionAModificar);
+
+        // Si el formulario fue cancelado internamente, salimos
+        if (sesionAModificar == null) return;
+
+        sesionDAO.update(sesionAModificar);
+        System.out.println("✅ Sesión reprogramada correctamente.");
+    }
+
+
+
+
+    /*private void reprogramarSesionExistente() {
         System.out.println("\n--- REPROGRAMAR SESIÓN ---");
         System.out.print("ID de la sesión a modificar: ");
 
@@ -137,10 +161,38 @@ public class SesionMenuController {
         } catch (NumberFormatException e) {
             System.out.println("Error: Formato de ID incorrecto.");
         }
-    }
+    }*/
 
     // --- OPCIÓN 4 ---
+    //Aqui lo mismo dejo comentado el metodo antiguo para ver la diferencia.
     private void cancelarSesion() {
+        System.out.println("\n--- CANCELAR SESIÓN ---");
+
+        int idSesionABorrar = utils.LectorConsola.leerIdConCancelacion(teclado, "ID de la sesión a borrar");
+
+        if (idSesionABorrar <= 0) return;
+
+        Sesion sesionABorrar = sesionDAO.selectById(idSesionABorrar);
+
+        if (sesionABorrar != null) {
+            if (usuarioActual instanceof Entrenador) {
+                Entrenador entrenadorLogueado = (Entrenador) usuarioActual;
+
+                if (sesionABorrar.getIdEntrenador() == entrenadorLogueado.getIdEntrenador()) {
+                    sesionDAO.delete(idSesionABorrar);
+                    System.out.println("✅ Tu sesión ha sido cancelada correctamente.");
+                } else {
+                    System.out.println("❌ ACCESO DENEGADO: No puedes cancelar las clases de otros profesores.");
+                }
+            } else {
+                sesionDAO.delete(idSesionABorrar);
+                System.out.println("✅ Sesión cancelada por administración.");
+            }
+        } else {
+            System.out.println("❌ No existe ninguna sesión registrada con ese ID.");
+        }
+    }
+  /*  private void cancelarSesion() {
         System.out.println("\n--- CANCELAR SESIÓN ---");
         System.out.print("ID de la sesión a borrar: ");
 
@@ -176,11 +228,12 @@ public class SesionMenuController {
         } catch (NumberFormatException e) {
             System.out.println("Error: ID no válido.");
         }
-    }
+    }*/
 
     // ====================================================================================
     // MÉTODO AUXILIAR PARA PEDIR DATOS
     // ====================================================================================
+    //Aqui solo he comentado la parte que he cambiado por no llenar mucho el codigo.
 
     private Sesion rellenarDatosSesion(Sesion sesionEnProceso) {
 
@@ -189,8 +242,14 @@ public class SesionMenuController {
         claseDAO.selectAll().forEach(c ->
                 System.out.println("ID: " + c.getIdClase() + " | Actividad: " + c.getNombre())
         );
+
+        int idClase = utils.LectorConsola.leerIdConCancelacion(teclado, "Introduce el ID de la Clase elegida");
+        if (idClase <= 0) return null; // Devolvemos null para indicar que se canceló la creación
+        sesionEnProceso.setIdClase(idClase);
+
+        /*Codigo antiguo
         System.out.print("Introduce el ID de la Clase elegida: ");
-        sesionEnProceso.setIdClase(Integer.parseInt(teclado.nextLine().trim()));
+        sesionEnProceso.setIdClase(Integer.parseInt(teclado.nextLine().trim()));*/
 
 
         // 2. ELEGIR EL ENTRENADOR
@@ -203,12 +262,14 @@ public class SesionMenuController {
             entrenadorDAO.selectAll().forEach(e ->
                     System.out.println("ID: " + e.getIdEntrenador() + " | Nombre: " + e.getNombre() + " " + e.getApellido())
             );
-            System.out.print("Introduce el ID del Entrenador que impartirá la clase: ");
-            sesionEnProceso.setIdEntrenador(Integer.parseInt(teclado.nextLine().trim()));
+
+            int idEntrenador = utils.LectorConsola.leerIdConCancelacion(teclado, "Introduce el ID del Entrenador");
+            if (idEntrenador <= 0) return null;
+            sesionEnProceso.setIdEntrenador(idEntrenador);
         }
 
 
-        // 3. ELEGIR LA SALA (La he hecho de enum por no cambiar mucho el programa, pero hubiera sido optimo hacer una nueva entidad clases.
+        // 3. ELEGIR LA SALA
         System.out.println("\n--- SALAS DISPONIBLES ---");
         SalaGimnasio[] salas = SalaGimnasio.values();
 
@@ -216,22 +277,15 @@ public class SesionMenuController {
             System.out.println((i + 1) + ". " + salas[i].name());
         }
 
-        boolean salaValida = false;
-        do {
-            System.out.print("Introduce el número de la sala asignada: ");
-            try {
-                int seleccionSala = Integer.parseInt(teclado.nextLine().trim());
+        int seleccionSala = utils.LectorConsola.leerIdConCancelacion(teclado, "Introduce el número de la sala asignada");
+        if (seleccionSala <= 0) return null;
 
-                if (seleccionSala > 0 && seleccionSala <= salas.length) {
-                    sesionEnProceso.setSala(salas[seleccionSala - 1].name());
-                    salaValida = true;
-                } else {
-                    System.out.println("Error: El número de sala no está en la lista.");
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Error: Por favor introduce un número válido.");
-            }
-        } while (!salaValida);
+        if (seleccionSala <= salas.length) {
+            sesionEnProceso.setSala(salas[seleccionSala - 1].name());
+        } else {
+            System.out.println("❌ Error: Sala no válida. Abortando...");
+            return null;
+        }
 
         // 4. DATOS DE TIEMPO
         LocalDateTime inicio;
@@ -248,7 +302,9 @@ public class SesionMenuController {
                 sesionEnProceso.setFin(fin);
                 horarioCoherente = true;
             } else {
-                System.out.println("Error de lógica: La sesión no puede terminar antes de empezar.");
+                System.out.println("❌ Error de lógica: La sesión no puede terminar antes de empezar.");
+                System.out.print("¿Quieres reintentar el horario? (S/N): ");
+                if (!teclado.nextLine().trim().equalsIgnoreCase("S")) return null;
             }
         } while (!horarioCoherente);
 
