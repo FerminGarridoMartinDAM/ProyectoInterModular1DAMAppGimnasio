@@ -8,34 +8,26 @@ package "model.enums" {
         ACTIVO
         INACTIVO
     }
+    enum EstadoPlan {
+        ACTIVO
+        INACTIVO
+    }
     enum EstadoSuscripcion {
         ACTIVA
         VENCIDA
         CANCELADA
-        ARCHIVADA
-    }
-    enum EstadoSesion {
-        PROGRAMADA
-        EN_CURSO
-        FINALIZADA
-        CANCELADA
     }
     enum EstadoReserva {
-        PENDIENTE
-        CONFIRMADA
-        REALIZADA
-        CANCELADA
+        RESERVADA
+        ASISTIDA
         AUSENTE
+        CANCELADA
     }
-    enum RolUsuario {
-        SOCIO
-        ENTRENADOR
-        SECRETARIO
-    }
-    enum TurnoTrabajo {
-        MAÑANA
-        TARDE
-        NOCHE
+    enum SalaGimnasio {
+        SALA_PRINCIPAL
+        SALA_MULTIUSOS
+        SALA_ZEN
+        SALA_SPINNING
     }
 }
 
@@ -47,12 +39,14 @@ package "model" {
         - apellido : String
         - email : String
         - password : String
-        - rol : RolUsuario
+        - telefono : String
         - estado : EstadoUsuario
     }
 
+    class Admin extends Usuario {
+    }
+
     class Socio extends Usuario {
-        - telefono : String
         - fechaAlta : LocalDate
     }
 
@@ -61,7 +55,7 @@ package "model" {
     }
 
     class Secretario extends Usuario {
-        - turno : TurnoTrabajo
+        - turno : String
     }
 
     class Clase {
@@ -77,11 +71,10 @@ package "model" {
         - inicio : LocalDateTime
         - fin : LocalDateTime
         - sala : String
-        - estado : EstadoSesion
+        - estado : String
     }
 
     class Reserva {
-        - idReserva : int
         - idSocio : int
         - idSesion : int
         - fechaReserva : LocalDateTime
@@ -91,8 +84,8 @@ package "model" {
     class Plan {
         - idPlan : int
         - nombre : String
-        - precio : double
-        - activo : boolean
+        - precioMensual : double
+        - estado : EstadoPlan
     }
 
     class Suscripcion {
@@ -104,7 +97,4 @@ package "model" {
         - estado : EstadoSuscripcion
     }
 }
-
-
-
 @enduml

@@ -3,71 +3,74 @@ title Diagrama de Estructura: Capa DAO y Conexión - Gym APP
 
 skinparam classAttributeIconSize 0
 
-
 ' PAQUETE DAO (Interfaces arriba, Clases abajo)
 package "dao" {
     
     ' Bloque de Interfaces
     interface UsuarioDAO {
         + login(email, pass) : Usuario
-        + buscarPorId(id) : Usuario
-        + modificar(u) : boolean
-        + eliminar(id) : boolean
+        + selectAll() : List<Usuario>
+        + selectById(id) : Usuario
+        + insert(u) : int
+        + update(u) : int
+        + delete(id) : int
     }
     interface SocioDAO {
-        + listar() : List<Socio>
-        + buscarPorId(id) : Socio
-        + insertar(s) : boolean
-        + modificar(s) : boolean
-        + eliminar(id) : boolean
+        + selectAll() : List<Socio>
+        + selectById(id) : Socio
+        + insert(s) : int
+        + update(s) : int
+        + delete(id) : int
     }
     interface EntrenadorDAO {
-        + listar() : List<Entrenador>
-        + buscarPorId(id) : Entrenador
-        + insertar(e) : boolean
-        + modificar(e) : boolean
-        + eliminar(id) : boolean
+        + selectAll() : List<Entrenador>
+        + selectById(id) : Entrenador
+        + insert(e) : int
+        + update(e) : int
+        + delete(id) : int
     }
     interface SecretarioDAO {
-        + listar() : List<Secretario>
-        + buscarPorId(id) : Secretario
-        + insertar(s) : boolean
-        + modificar(s) : boolean
-        + eliminar(id) : boolean
+        + selectAll() : List<Secretario>
+        + selectById(id) : Secretario
+        + insert(s) : int
+        + update(s) : int
+        + delete(id) : int
     }
     interface ClaseDAO {
-        + listar() : List<Clase>
-        + buscarPorId(id) : Clase
-        + insertar(c) : boolean
-        + modificar(c) : boolean
-        + eliminar(id) : boolean
+        + selectAll() : List<Clase>
+        + selectById(id) : Clase
+        + insert(c) : int
+        + update(c) : int
+        + delete(id) : int
     }
     interface SesionDAO {
-        + listarPorFecha(f) : List<Sesion>
-        + buscarPorId(id) : Sesion
-        + insertar(s) : boolean
-        + modificar(s) : boolean
-        + eliminar(id) : boolean
+        + selectAll() : List<Sesion>
+        + selectById(id) : Sesion
+        + insert(s) : int
+        + update(s) : int
+        + delete(id) : int
     }
     interface ReservaDAO {
-        + listarPorSesion(id) : List<Reserva>
-        + buscarPorId(id) : Reserva
-        + insertar(r) : boolean
-        + eliminar(id) : boolean
+        + selectAll() : List<Reserva>
+        + selectById(idSocio, idSesion) : Reserva
+        + insert(r) : int
+        + update(r) : int
+        + delete(idSocio, idSesion) : int
     }
     interface PlanDAO {
-        + listar() : List<Plan>
-        + buscarPorId(id) : Plan
-        + insertar(p) : boolean
-        + modificar(p) : boolean
-        + eliminar(id) : boolean
+        + selectAll() : List<Plan>
+        + selectById(id) : Plan
+        + insert(p) : int
+        + update(p) : int
+        + delete(id) : int
+        + actualizarEstado(id, estado) : int
     }
     interface SuscripcionDAO {
-        + consultarActiva(idSocio) : Suscripcion
-        + buscarPorId(id) : Suscripcion
-        + insertar(s) : boolean
-        + modificar(s) : boolean
-        + eliminar(id) : boolean
+        + selectAll() : List<Suscripcion>
+        + selectById(id) : Suscripcion
+        + insert(s) : int
+        + update(s) : int
+        + delete(id) : int
     }
 
     ' Separador invisible para forzar a las interfaces arriba
@@ -91,9 +94,7 @@ package "database" {
         + {static} getConexion() : Connection
     }
 }
-
-
-
+ 
 ' Herencia de comportamiento (Implements)
 UsuarioDAO <|.. UsuarioDAOPostgres
 SocioDAO <|.. SocioDAOPostgres

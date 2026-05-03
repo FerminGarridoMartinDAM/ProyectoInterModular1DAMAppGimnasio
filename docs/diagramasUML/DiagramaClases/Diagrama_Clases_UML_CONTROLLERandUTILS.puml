@@ -1,0 +1,96 @@
+@startuml
+title Diagrama de Controladores y Utilidades - Gym APP
+ 
+skinparam classAttributeIconSize 0
+' Esto hace que las líneas sean ortogonales (rectas y limpias) para evitar el diagrama espagueti
+skinparam linetype ortho 
+
+package "utils" {
+    class LectorConsola {
+        + {static} leerIdConCancelacion() : int
+    }
+    class ValidadorFechas {
+        + {static} pedirSoloFecha() : LocalDate
+        + {static} pedirFechaHora() : LocalDateTime
+    }
+    class GestorBackup {
+        + vaciarBaseDatos() : void
+        + exportarBackupBD() : void
+        + importarBackup() : GimnasioObjetosJavaDTO
+    }
+    class CargarDatosInicialesSQL {
+        + {static} cargarTodo() : void
+    }
+}
+
+package "controller" {
+    class MenuPrincipalController {
+        - teclado : Scanner
+        + iniciar() : void
+    }
+    
+    class LoginController {
+        + iniciarSesion() : Usuario
+    }
+    
+    class GestionSociosController {
+        + mostrarMenu() : void
+    }
+    class GestionEntrenadoresController {
+        + mostrarMenu() : void
+    }
+    class GestionSecretariosController {
+        + mostrarMenu() : void
+    }
+    class GestionPlanesController {
+        + mostrarMenu() : void
+    }
+    class GestionSuscripcionesController {
+        + mostrar() : void
+    }
+    class GestionSesionController {
+        + mostrar() : void
+    }
+    class GestionReservasController {
+        + mostrarMenu() : void
+    }
+    class GestionBackupController {
+        + mostrarMenu() : void
+    }
+}
+
+' =========================================================
+' RELACIONES DEL MENÚ PRINCIPAL
+' =========================================================
+MenuPrincipalController --> LoginController : "Usa para autenticar"
+
+MenuPrincipalController --> GestionSociosController
+MenuPrincipalController --> GestionEntrenadoresController
+MenuPrincipalController --> GestionSecretariosController
+MenuPrincipalController --> GestionPlanesController
+MenuPrincipalController --> GestionSuscripcionesController
+MenuPrincipalController --> GestionSesionController
+MenuPrincipalController --> GestionReservasController
+MenuPrincipalController --> GestionBackupController
+
+' =========================================================
+' RELACIONES DE UTILIDADES
+' =========================================================
+
+' Backup
+GestionBackupController ..> GestorBackup : "Delega lógica a"
+
+' ValidadorFechas se usa en Socios y Sesiones
+GestionSociosController ..> ValidadorFechas
+GestionSesionController ..> ValidadorFechas
+
+' LectorConsola se usa en casi todos los sub-controladores
+GestionSociosController ..> LectorConsola 
+GestionEntrenadoresController ..> LectorConsola
+GestionSecretariosController ..> LectorConsola
+GestionPlanesController ..> LectorConsola
+GestionSuscripcionesController ..> LectorConsola
+GestionSesionController ..> LectorConsola
+GestionReservasController ..> LectorConsola
+
+@enduml
