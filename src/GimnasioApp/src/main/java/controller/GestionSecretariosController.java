@@ -150,31 +150,35 @@ public class GestionSecretariosController {
     // --- OPCIÓN 3: BAJA LÓGICA (SOFT DELETE) ---
     private void bajaLogicaSecretario() {
         System.out.println("\n--- BAJA DE SECRETARIO (DESACTIVACIÓN) ---");
-        System.out.print("Introduce el ID del secretario a dar de baja: ");
 
+        int idSecretario = utils.LectorConsola.leerIdConCancelacion(teclado, "Introduce el ID del secretario a dar de baja");
+        if (idSecretario <= 0) return;
+
+        /*System.out.print("Introduce el ID del secretario a dar de baja: ");
         try {
-            int idSecretario = Integer.parseInt(teclado.nextLine().trim());
+            int idSecretario = Integer.parseInt(teclado.nextLine().trim());*/
 
-            // Primero, buscamos si el secretario existe
-            Secretario secretarioABorrar = secretarioDAO.selectById(idSecretario);
+        // Primero, buscamos si el secretario existe
+        Secretario secretarioABorrar = secretarioDAO.selectById(idSecretario);
 
-            if (secretarioABorrar != null) {
-                if (secretarioABorrar.getEstado() == EstadoUsuario.INACTIVO) {
-                    System.out.println("⚠️ Este secretario ya estaba dado de baja previamente.");
-                } else {
-                    // Cambiamos su estado a INACTIVO
-                    secretarioABorrar.setEstado(EstadoUsuario.INACTIVO);
-
-                    // Usamos update() para guardar el cambio de estado en la BD
-                    secretarioDAO.update(secretarioABorrar);
-                    System.out.println("✅ El secretario ha sido desactivado correctamente (Baja lógica).");
-                }
+        if (secretarioABorrar != null) {
+            if (secretarioABorrar.getEstado() == EstadoUsuario.INACTIVO) {
+                System.out.println("⚠️ Este secretario ya estaba dado de baja previamente.");
             } else {
-                System.out.println("❌ No se encontró ningún secretario con ese ID.");
+                // Cambiamos su estado a INACTIVO
+                secretarioABorrar.setEstado(EstadoUsuario.INACTIVO);
+
+                // Usamos update() para guardar el cambio de estado en la BD
+                secretarioDAO.update(secretarioABorrar);
+                System.out.println("✅ El secretario ha sido desactivado correctamente (Baja lógica).");
             }
-        } catch (NumberFormatException e) {
-            System.out.println("❌ Error: Formato de ID incorrecto.");
+        } else {
+            System.out.println("❌ No se encontró ningún secretario con ese ID.");
         }
+
+        /*} catch (NumberFormatException e) {
+            System.out.println("❌ Error: Formato de ID incorrecto.");
+        }*/
     }
 
     // --- OPCIÓN 4: BORRADO FÍSICO (HARD DELETE) ---
@@ -184,32 +188,36 @@ public class GestionSecretariosController {
         // ADUANA DE SEGURIDAD
         if (usuarioActual instanceof Admin) {
 
-            System.out.print("Introduce el ID del secretario a ELIMINAR del sistema: ");
+            int idSecretario = utils.LectorConsola.leerIdConCancelacion(teclado, "Introduce el ID del secretario a ELIMINAR del sistema");
+            if (idSecretario <= 0) return;
+
+            /*System.out.print("Introduce el ID del secretario a ELIMINAR del sistema: ");
             try {
-                int idSecretario = Integer.parseInt(teclado.nextLine().trim());
+                int idSecretario = Integer.parseInt(teclado.nextLine().trim());*/
 
-                System.out.print("⚠️ ¿Estás completamente seguro? Esta acción no se puede deshacer. (S/N): ");
-                String confirmacion = teclado.nextLine().trim().toUpperCase();
+            System.out.print("⚠️ ¿Estás completamente seguro? Esta acción no se puede deshacer. (S/N): ");
+            String confirmacion = teclado.nextLine().trim().toUpperCase();
 
-                if (confirmacion.equals("S")) {
-                    int resultado = secretarioDAO.delete(idSecretario);
+            if (confirmacion.equals("S")) {
+                int resultado = secretarioDAO.delete(idSecretario);
 
-                    if (resultado > 0) {
-                        System.out.println("✅ El secretario ha sido borrado físicamente de la base de datos.");
-                    } else {
-                        System.out.println("❌ No se pudo borrar al secretario (¿Quizás no existe o tiene dependencias?)");
-                    }
+                if (resultado > 0) {
+                    System.out.println("✅ El secretario ha sido borrado físicamente de la base de datos.");
                 } else {
-                    System.out.println("Operación de borrado cancelada.");
+                    System.out.println("❌ No se pudo borrar al secretario (¿Quizás no existe o tiene dependencias?)");
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("❌ Error: Formato de ID incorrecto.");
+            } else {
+                System.out.println("Operación de borrado cancelada.");
             }
+
+            /*} catch (NumberFormatException e) {
+                System.out.println("❌ Error: Formato de ID incorrecto.");
+            }*/
 
         } else {
             // Lanzamiento de excepción de seguridad
-            System.out.println("ACCESO DENEGADO: No tienes el nivel de privilegios necesario (Se requiere rol Admin).");
-            throw new SecurityException("Intento de acceso no autorizado al borrado físico de la base de datos.");
+            System.out.println(" ⛔ ACCESO DENEGADO: No tienes el nivel de privilegios necesario (Se requiere rol Admin).");
+            throw new SecurityException("⛔ Intento de acceso no autorizado al borrado físico de la base de datos.");
         }
     }
 }

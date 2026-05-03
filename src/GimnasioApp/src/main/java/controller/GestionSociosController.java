@@ -54,7 +54,7 @@ public class GestionSociosController {
             System.out.println("3. Dar de baja a un socio (Desactivar)");
             //Esta opcion solo sale si es un admin.
             if (usuarioActual instanceof Admin) {
-                System.out.println(". Borrado permanente de un socio");
+                System.out.println("4  . Borrado permanente de un socio");
             }
             System.out.println("0. Volver al menú anterior");
             System.out.print("Selección: ");
@@ -167,31 +167,34 @@ public class GestionSociosController {
     // --- OPCIÓN 3: BAJA LÓGICA (SOFT DELETE) ---  en vez de hacerle un borrado permanente lo dejamos en inactivo por si necesitamos sus datos para algo.
     private void bajaLogicaSocio() {
         System.out.println("\n--- BAJA DE SOCIO (DESACTIVACIÓN) ---");
-        System.out.print("Introduce el ID del socio a dar de baja: ");
 
+        int idSocio = utils.LectorConsola.leerIdConCancelacion(teclado, "Introduce el ID del socio a dar de baja");
+        if (idSocio <= 0) return;
+
+        /*System.out.print("Introduce el ID del socio a dar de baja: ");
         try {
-            int idSocio = Integer.parseInt(teclado.nextLine().trim());
+            int idSocio = Integer.parseInt(teclado.nextLine().trim());*/
 
-            // Primero, buscamos si el socio existe
-            Socio socioABorrar = socioDAO.selectById(idSocio);
+        // Primero, buscamos si el socio existe
+        Socio socioABorrar = socioDAO.selectById(idSocio);
 
-            if (socioABorrar != null) {
-                if (socioABorrar.getEstado() == EstadoUsuario.INACTIVO) {
-                    System.out.println("⚠️ Este socio ya estaba dado de baja previamente.");
-                } else {
-                    // Cambiamos su estado a INACTIVO
-                    socioABorrar.setEstado(EstadoUsuario.INACTIVO);
-
-                    // Usamos  update() para guardar el cambio de estado en la BD
-                    socioDAO.update(socioABorrar);
-                    System.out.println("✅ El socio ha sido desactivado correctamente (Baja lógica).");
-                }
+        if (socioABorrar != null) {
+            if (socioABorrar.getEstado() == EstadoUsuario.INACTIVO) {
+                System.out.println("⚠️ Este socio ya estaba dado de baja previamente.");
             } else {
-                System.out.println("❌ No se encontró ningún socio con ese ID.");
+                // Cambiamos su estado a INACTIVO
+                socioABorrar.setEstado(EstadoUsuario.INACTIVO);
+                // Usamos  update() para guardar el cambio de estado en la BD
+                socioDAO.update(socioABorrar);
+                System.out.println("✅ El socio ha sido desactivado correctamente (Baja lógica).");
             }
-        } catch (NumberFormatException e) {
-            System.out.println("❌ Error: Formato de ID incorrecto.");
+        } else {
+            System.out.println("❌ No se encontró ningún socio con ese ID.");
         }
+
+        /*} catch (NumberFormatException e) {
+            System.out.println("❌ Error: Formato de ID incorrecto.");
+        }*/
     }
 
     // --- OPCIÓN 4: BORRADO FÍSICO (HARD DELETE ) --- Aqui si se borra el usuario permanente
@@ -202,33 +205,37 @@ public class GestionSociosController {
         // Pero se deja como capa de seguridad.
         if (usuarioActual instanceof Admin) {
 
-            System.out.print("Introduce el ID del socio a ELIMINAR del sistema: ");
+            int idSocio = utils.LectorConsola.leerIdConCancelacion(teclado, "Introduce el ID del socio a ELIMINAR del sistema");
+            if (idSocio <= 0) return;
+
+            /*System.out.print("Introduce el ID del socio a ELIMINAR del sistema: ");
             try {
-                int idSocio = Integer.parseInt(teclado.nextLine().trim());
+                int idSocio = Integer.parseInt(teclado.nextLine().trim());*/
 
-                System.out.print("⚠️ ¿Estás completamente seguro? Esta acción no se puede deshacer. (S/N): ");
-                String confirmacion = teclado.nextLine().trim().toUpperCase();
+            System.out.print("⚠️ ¿Estás completamente seguro? Esta acción no se puede deshacer. (S/N): ");
+            String confirmacion = teclado.nextLine().trim().toUpperCase();
 
-                if (confirmacion.equals("S")) {
-                    int resultado = socioDAO.delete(idSocio);
+            if (confirmacion.equals("S")) {
+                int resultado = socioDAO.delete(idSocio);
 
-                    if (resultado > 0) {
-                        System.out.println("✅ El socio ha sido borrado físicamente de la base de datos.");
-                    } else {
-                        System.out.println("❌ No se pudo borrar al socio (¿Quizás no existe o tiene dependencias?)");
-                    }
+                if (resultado > 0) {
+                    System.out.println("✅ El socio ha sido borrado físicamente de la base de datos.");
                 } else {
-                    System.out.println("Operación de borrado cancelada.");
+                    System.out.println("❌ No se pudo borrar al socio (¿Quizás no existe o tiene dependencias?)");
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("❌ Error: Formato de ID incorrecto.");
+            } else {
+                System.out.println("Operación de borrado cancelada.");
             }
+
+            /*} catch (NumberFormatException e) {
+                System.out.println("❌ Error: Formato de ID incorrecto.");
+            }*/
 
         } else {
             // Y por lo tanto este tampoco haria falta pero lo vamos a dejar para verlo.
-            System.out.println("ACCESO DENEGADO: No tienes el nivel de privilegios necesario (Se requiere rol Admin).");
+            System.out.println("⛔ ACCESO DENEGADO: No tienes el nivel de privilegios necesario (Se requiere rol Admin).");
             //De hecho lo que se aconseja  es lanzar una exception de seguridad que detinene el progama
-           throw new SecurityException("Intento de acceso no autorizado al borrado físico de la base de datos.");
+            throw new SecurityException("❌Intento de acceso no autorizado al borrado físico de la base de datos.");
         }
     }
 }
