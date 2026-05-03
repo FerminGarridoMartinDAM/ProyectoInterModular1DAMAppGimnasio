@@ -461,8 +461,8 @@ public class GestorBackup {
         PreparedStatement pstmt = null;
 
         try {
-            Connection conn = database.ConexionDB.getConexion();
-            pstmt = conn.prepareStatement(query);
+            Connection conexion = database.ConexionDB.getConexion();
+            pstmt = conexion.prepareStatement(query);
 
             pstmt.executeUpdate();
             System.out.println("✅ Base de datos reseteada. Tablas vacías y contadores a 0.");

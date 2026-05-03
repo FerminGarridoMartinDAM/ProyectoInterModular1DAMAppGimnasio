@@ -102,7 +102,6 @@ public class CargarDatosInicialesSQL {
             // 3. Ejecutamos la inyección (como no es un SELECT, usamos execute en lugar de executeQuery)
             pstmt.execute();
 
-            System.out.println("✅ Mock Data inyectada con éxito.");
             System.out.println("Datos cargados con éxito.");
 
         } catch (Exception e) {
