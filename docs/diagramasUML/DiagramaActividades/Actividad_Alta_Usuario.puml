@@ -1,18 +1,19 @@
 @startuml
-title Proceso de Alta de Usuario (Secretario)
+title Proceso de Alta de Usuario (Secretario / Admin)
 
 start
 
-:Acceder a "Gestión de Socios/Entrenadores";
-:Seleccionar "Nuevo Alta";
-:Introducir Datos Personales (Nombre, Email, etc.);
+:Acceder a Gestión de Socios / Entrenadores;
+:Seleccionar "Alta de nuevo...";
+:Introducir Datos Personales y Rol;
 
-:El sistema comprueba los registros;
+:Insertar Registro en Base de Datos;
 
-if (¿El correo electrónico ya está en uso?) then (Sí)
-  :Mostrar aviso "Este correo ya está registrado"; <<#red>>
+if (¿El correo electrónico ya existe en BD?) then (Sí)
+  :La BD rechaza el registro;
+  :Mostrar aviso "Hubo un problema al registrar"; <<#red>>
 else (No)
-  :Guardar el nuevo perfil (como Socio o Entrenador);
+  :El sistema asigna estado ACTIVO por defecto;
   :Mostrar mensaje "Alta completada con éxito"; <<#green>>
 endif
 

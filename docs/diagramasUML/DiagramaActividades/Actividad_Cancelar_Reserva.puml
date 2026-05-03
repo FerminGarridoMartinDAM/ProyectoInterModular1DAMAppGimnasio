@@ -1,16 +1,25 @@
 @startuml
-title Proceso de Cancelar Reserva (Socio)
+title Proceso de Cancelar Reserva (Socio / Secretario / Admin)
 
 start
 
-:Acceder a "Mis Reservas";
-:Seleccionar reserva a cancelar;
-:Confirmar cancelación;
+if (¿Rol del Usuario actual?) then (Socio)
+  :Acceder a "Mis Reservas";
+  :Seleccionar la reserva a cancelar;
+else (Secretario / Admin)
+  :Acceder a "Gestión de Reservas";
+  :Introducir ID del Socio e ID de la Sesión;
+endif
 
-:Eliminar registro de la tabla 'reserva';
-:Sumar 1 plaza al aforo temporal de la sesión;
+:Buscar Reserva en la Base de Datos;
 
-:Mostrar mensaje "Reserva Cancelada con éxito"; <<#green>>
+if (¿La reserva existe?) then (No)
+  :Mostrar "No se ha encontrado ninguna reserva"; <<#red>>
+else (Sí)
+  :Modificar el estado de la reserva a CANCELADA;
+  :Actualizar el registro en la Base de Datos (UPDATE);
+  :Mostrar "El estado se ha actualizado a: CANCELADA"; <<#green>>
+endif
 
 stop
 @enduml

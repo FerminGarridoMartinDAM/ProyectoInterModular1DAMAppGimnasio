@@ -1,17 +1,29 @@
 @startuml
-title Proceso de Iniciar Sesión (Login)
+
+
+title Proceso de Inicio de Sesión (Login)
 
 start
 
-:Introducir Email y Contraseña;
-:Buscar usuario en Base de Datos;
+:Ejecutar Sistema (Main);
+:Solicitar Email y Contraseña (LoginController);
 
-if (¿Credenciales correctas?) then (No)
-  :Mostrar error "Usuario o contraseña incorrectos"; <<#red>>
-else (Sí)
-  :Generar sesión de usuario (Socio , Entrenador o Secretario);
-  :Redirigir al Menú Principal; <<#green>>
+:Consultar Base de Datos;
+
+if (¿Email "admin" y Password "admin"?) then (Sí)
+  :Generar SuperUsuario en Memoria;
+  :Mostrar Panel de Control ADMIN; <<#green>>
+else (No)
+  if (¿Credenciales correctas?) then (Sí)
+    if (¿El estado es ACTIVO?) then (Sí)
+      :Redirigir al Panel según Rol (Socio, Entrenador...); <<#green>>
+    else (No)
+      :Mostrar "Acceso Denegado: Cuenta inactiva"; <<#red>>
+    endif
+  else (No)
+    :Mostrar "Credenciales incorrectas"; <<#red>>
+  endif
 endif
 
 stop
-@enduml
+@enduml  

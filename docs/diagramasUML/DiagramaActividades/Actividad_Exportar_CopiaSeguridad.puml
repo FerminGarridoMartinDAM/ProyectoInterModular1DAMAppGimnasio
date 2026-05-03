@@ -1,0 +1,29 @@
+@startuml
+ 
+title Proceso de Exportar Copia de Seguridad JSON (Solo Admin)
+
+start
+
+:Acceder a "Herramientas de Sistema";
+if (¿El Usuario es Administrador?) then (No)
+  :Bloquear y expulsar del sub-menú; <<#red>>
+  stop
+else (Sí)
+endif
+
+:Seleccionar "Exportar Copia de Seguridad a JSON";
+:Recopilar datos de la Base de Datos (DAOs);
+:Transferir objetos a GestorBackup;
+
+:Convertir información a JSON;
+:Crear archivo en disco duro;
+
+if (¿Fallo al escribir en el disco?) then (Sí)
+  :Mostrar "Error fatal al guardar"; <<#red>>
+else (No)
+  :Mostrar "Copia de seguridad completada"; <<#green>>
+endif
+
+stop
+
+@enduml

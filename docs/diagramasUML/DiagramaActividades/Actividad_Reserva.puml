@@ -1,26 +1,35 @@
-    @startuml
-    title Proceso de Reserva de Sesión
-    
-    start
-    
-    :Seleccionar Clase/Sesión;
-    
-    if (¿Tiene suscripción activa?) then (No)
-      :Mostrar Planes disponibles;
-      :Socio elige y paga Plan;
-    else (Sí)
-    endif
-    
-    :Comprobar Aforo en Base de Datos;
-    
-    if (¿Hay plazas libres?) then (No)
-    :Mostrar mensaje "Sesión Llena"; <<#red>>
-    
-    else (Sí)
-      :Registrar Reserva en Sistema;
-      :Restar 1 al aforo temporal;
-     :Mostrar Confirmación ; <<#green>>
-    endif
-    
-    stop
-    @enduml
+@startuml
+
+title Proceso de Reserva de Sesión
+
+start
+
+:Acceder a "Gestión de Reservas";
+:Seleccionar "Registrar nueva reserva";
+
+:Solicitar ID de Socio;
+if (¿El Socio existe?) then (No)
+  :Mostrar error y cancelar; <<#red>>
+  stop
+else (Sí)
+endif
+
+:Solicitar ID de Sesión;
+if (¿La Sesión existe?) then (No)
+  :Mostrar error y cancelar; <<#red>>
+  stop
+else (Sí)
+endif
+
+:Insertar Reserva en BD;
+
+if (¿La Clave Compuesta ya existe?) then (Sí)
+  :La BD rechaza el registro;
+  :Mostrar "El socio ya tiene reserva para esta sesión"; <<#red>>
+else (No)
+  :Mostrar "Reserva confirmada"; <<#green>>
+endif
+
+stop
+
+@enduml

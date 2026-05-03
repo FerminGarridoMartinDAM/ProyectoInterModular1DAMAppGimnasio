@@ -1,19 +1,28 @@
 @startuml
-title Proceso de Gestión de Suscripción (Socio)
+title Proceso de Gestion de Suscripción a un Socio
 
 start
 
-:Acceder a "Mi Suscripción";
-:Consultar estado en Base de Datos;
+:Acceder a "Gestión de Suscripciones";
+:Seleccionar "Vender nueva suscripción";
 
-if (¿Tiene suscripción activa?) then (Sí)
-  :Mostrar detalles (Plan y Fecha límite); <<#green>>
-else (No)
-  :Mostrar catálogo de Planes;
-  :Seleccionar Plan e introducir datos de pago;
-  :Registrar nueva suscripción en Base de Datos;
-  :Mostrar Confirmación de Pago; <<#green>>
+:Solicitar ID de Socio;
+if (¿El Socio existe en la BD?) then (No)
+  :Mostrar error "No existe el socio"; <<#red>>
+  stop
+else (Sí)
 endif
+
+:Solicitar ID del Plan;
+if (¿El Plan existe en la BD?) then (No)
+  :Mostrar error "No existe el plan"; <<#red>>
+  stop
+else (Sí)
+endif
+
+:Generar Fecha de Inicio (Hoy) y Fin (+1 Mes);
+:Insertar registro en la BD (Estado: ACTIVA);
+:Mostrar "Venta completada"; <<#green>>
 
 stop
 @enduml

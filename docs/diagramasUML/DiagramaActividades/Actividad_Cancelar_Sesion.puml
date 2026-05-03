@@ -1,19 +1,30 @@
 @startuml
-title Proceso de Cancelar Sesión (Entrenador / Secretario)
+title Proceso de Cancelar Sesión (Aduana de Seguridad)
 
 start
 
-:Identificar Sesión en el Horario;
-:Solicitar Cancelación;
+:Acceder a "Calendario de Sesiones";
+:Seleccionar "Cancelar sesión";
+:Solicitar ID de la Sesión a Borrar;
 
-if (¿Existen Reservas activas?) then (Sí)
-  :Notificar automáticamente a los Socios;
-  :Eliminar registros en tabla 'reserva';
+:Buscar Sesión en la Base de Datos;
+
+if (¿La sesión existe?) then (Sí)
+  if (¿Usuario es Entrenador?) then (Sí)
+    if (¿La sesión pertenece al Entrenador actual?) then (Sí)
+      :Eliminar sesión de la BD;
+      :Mostrar "Tu sesión ha sido cancelada"; <<#green>>
+    else (No)
+      :Bloquear acceso;
+      :Mostrar "No puedes cancelar clases ajenas"; <<#red>>
+    endif
+  else (No, es Admin/Secretario)
+    :Eliminar sesión de la BD;
+    :Mostrar "Sesión cancelada por administración"; <<#green>>
+  endif
 else (No)
+  :Mostrar "No existe sesión con ese ID"; <<#red>>
 endif
-
-:Eliminar registro en tabla 'sesion';
-:Confirmar "Sesión eliminada y horario actualizado"; <<#green>>
 
 stop
 @enduml

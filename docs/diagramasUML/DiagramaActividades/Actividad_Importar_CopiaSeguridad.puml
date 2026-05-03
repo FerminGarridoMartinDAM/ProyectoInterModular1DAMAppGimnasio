@@ -1,0 +1,28 @@
+@startuml
+title Proceso de Restaurar Copia de Seguridad JSON (Solo Admin)
+
+start
+
+:Acceder a "Herramientas de Sistema";
+if (¿El Usuario es Administrador?) then (No)
+  :Bloquear y expulsar del menú; <<#red>>
+  stop
+else (Sí)
+endif
+
+:Seleccionar "Restaurar Copia de Seguridad";
+:Confirmar advertencia de borrado de datos actuales;
+
+:GestorBackup lee el archivo JSON del disco;
+
+if (¿El archivo existe y es válido?) then (No)
+  :Mostrar "No se pudo completar la restauración"; <<#red>>
+else (Sí)
+  :Vaciar la Base de Datos actual para evitar conflictos;
+  :Insertar primero tablas Padre (Usuarios, Planes, Clases);
+  :Insertar después tablas Hijo (Sesiones, Suscripciones, Reservas);
+  :Mostrar "Restauración completada con éxito"; <<#green>>
+endif
+
+stop
+@enduml
