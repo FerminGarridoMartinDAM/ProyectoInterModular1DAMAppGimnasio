@@ -1,9 +1,9 @@
 package controller;
 
+import dao.PlanDAO;
 import dao.SocioDAO;
-import model.Socio;
-import model.Usuario;
-import model.Admin; // Asumimos que tienes una clase Admin para el dueño/administrador
+import dao.SuscripcionDAO;
+import model.*;
 import model.enums.EstadoUsuario;
 import utils.ValidadorFechas;
 
@@ -35,14 +35,20 @@ import java.util.Scanner;
 public class GestionSociosController {
 
     private SocioDAO socioDAO;
+    private SuscripcionDAO suscripcionDAO;
+    private PlanDAO planDAO;
     private Scanner teclado;
     private Usuario usuarioActual; // El guarda de seguridad
 
-    public GestionSociosController(SocioDAO socioDAO, Scanner teclado, Usuario usuarioActual) {
+    public GestionSociosController(SocioDAO socioDAO, SuscripcionDAO suscripcionDAO, PlanDAO planDAO, Scanner teclado, Usuario usuarioActual) {
         this.socioDAO = socioDAO;
+        this.suscripcionDAO = suscripcionDAO;
+        this.planDAO = planDAO;
         this.teclado = teclado;
         this.usuarioActual = usuarioActual;
     }
+
+
 
     public void mostrarMenu() {
         int opcionMenu = -1;
@@ -103,16 +109,36 @@ public class GestionSociosController {
         // 1. Traemos los socios del DAO.
 
         List<Socio> listaSocios = socioDAO.selectAll();
+        List<Suscripcion> listaSuscripciones = suscripcionDAO.selectAll();
+        List<Plan> listaPlanes = planDAO.selectAll();
 
         // 2. Comprobamos si la lista está vacía
         if (listaSocios.isEmpty()) {
             System.out.println("ℹ️ No hay ningún socio registrado en la base de datos en este momento.");
         } else {
             // 3. Recorremos la lista y la imprimimos de forma limpia
-            System.out.println("ID  | ESTADO   | NOMBRE Y APELLIDO | EMAIL | ALTA");
-            System.out.println("------------------------------------------------------------------");
+            System.out.println("ID  | ESTADO   | NOMBRE Y APELLIDO    | EMAIL                | ALTA       | PLAN ACTIVO");
+            System.out.println("-------------------------------------------------------------------------------------------------");
 
             for (Socio socio : listaSocios) {
+
+                // Lógica para descubrir el plan de este socio
+                String nombrePlanActual = "Sin Plan"; // le hemos puesto "sin plan" pero lo podiamos inicializado com oquisieramos.
+
+                // Buscamos entre todas las suscripciones la que sea de este socio y esté ACTIVA
+                for (Suscripcion sub : listaSuscripciones) {
+                    if (sub.getIdSocio() == socio.getIdUsuario() && sub.getEstado().toString().equals("ACTIVA")) {
+
+                        // Si la encontramos, buscamos el nombre del plan usando el ID
+                        for (Plan plan : listaPlanes) {
+                            if (plan.getIdPlan() == sub.getIdPlan()) {
+                                nombrePlanActual = plan.getNombre();
+                                break; // Rompemos el bucle de planes, ya lo hemos encontrado
+                            }
+                        }
+                        break; // Rompemos el bucle de suscripciones, un socio solo tiene una activa
+                    }
+                }
                 System.out.printf("%-3d | %-8s | %s %s | %s | %s\n",
                         socio.getIdUsuario(),
                         socio.getEstado(),

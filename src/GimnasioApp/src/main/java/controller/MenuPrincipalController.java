@@ -52,7 +52,7 @@ public class MenuPrincipalController {
             }
 
             // 2. PREPARACIÓN DE HERRAMIENTAS (Se instancian con el usuario ya logueado)
-            GestionSociosController sociosCtrl = new GestionSociosController(socioDAO, teclado, usuarioActual);
+            GestionSociosController sociosCtrl = new GestionSociosController(socioDAO, suscripcionDAO, planDAO, teclado, usuarioActual);
             GestionEntrenadoresController entrenadoresCtrl = new GestionEntrenadoresController(entrenadorDAO, teclado, usuarioActual);
             GestionSecretariosController secretariosCtrl = new GestionSecretariosController(secretarioDAO, teclado, usuarioActual);
             GestionPlanesController planesCtrl = new GestionPlanesController(planDAO, teclado, usuarioActual);
