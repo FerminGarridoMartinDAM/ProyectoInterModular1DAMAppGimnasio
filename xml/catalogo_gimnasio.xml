@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalogoGimnasio
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="catalogo_esquema.xsd">
+
+  <metadatos>
+    <nombreGym>Gym APP Prometeo</nombreGym>
+    <!-- La fecha debe cumplir el formato xs:date (AAAA-MM-DD) -->
+    <fechaExportacion>2026-05-03</fechaExportacion>
+    <version>1.0</version>
+  </metadatos>
+
+  <planes>
+    <plan id="p1" estado="ACTIVO">
+      <nombre>Mensual VIP</nombre>
+      <precioMensual moneda="EUR">49.99</precioMensual>
+    </plan>
+    <plan id="p2" estado="ACTIVO">
+      <nombre>Trimestral Básico</nombre>
+      <precioMensual moneda="EUR">120.00</precioMensual>
+    </plan>
+    <plan id="p3" estado="INACTIVO">
+      <nombre>Anual Premium</nombre>
+      <precioMensual moneda="EUR">450.00</precioMensual>
+    </plan>
+  </planes>
+
+  <clases>
+    <clase id="c1">
+      <nombre>Zumba</nombre>
+      <aforoMax>30</aforoMax>
+    </clase>
+    <clase id="c2">
+      <nombre>Spinning</nombre>
+      <aforoMax>20</aforoMax>
+    </clase>
+    <clase id="c3">
+      <nombre>Yoga</nombre>
+      <aforoMax>15</aforoMax>
+    </clase>
+  </clases>
+
+</catalogoGimnasio>
