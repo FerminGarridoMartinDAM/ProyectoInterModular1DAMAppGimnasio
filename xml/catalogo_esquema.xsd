@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  elementFormDefault="unqualified"
+  attributeFormDefault="unqualified">
+
+  <!-- ==============================
+       TIPOS SIMPLES (Restricciones y Validaciones)
+       ============================== -->
+
+  <!-- Restricción: El estado del plan debe coincidir con el Enum de Java -->
+  <xs:simpleType name="EstadoPlanType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ACTIVO"/>
+      <xs:enumeration value="INACTIVO"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Restricción: Moneda fija en Euros -->
+  <xs:simpleType name="MonedaType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="EUR"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Restricción: Un aforo no puede ser negativo ni mayor a 100 plazas -->
+  <xs:simpleType name="AforoType">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="1"/>
+      <xs:maxInclusive value="100"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Restricción: El precio debe ser un número decimal positivo -->
+  <xs:simpleType name="PrecioDecimalType">
+    <xs:restriction base="xs:decimal">
+      <xs:minInclusive value="0.00"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ==============================
+       TIPOS COMPLEJOS REUTILIZABLES
+       ============================== -->
+
+  <!-- Un precio que contiene un número decimal y un atributo 'moneda' -->
+  <xs:complexType name="PrecioType">
+    <xs:simpleContent>
+      <xs:extension base="PrecioDecimalType">
+        <xs:attribute name="moneda" type="MonedaType" default="EUR"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- Estructura de un Plan de Suscripción -->
+  <xs:complexType name="PlanType">
+    <xs:sequence>
+      <xs:element name="nombre" type="xs:string"/>
+      <xs:element name="precioMensual" type="PrecioType"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="estado" type="EstadoPlanType" use="required"/>
+  </xs:complexType>
+
+  <!-- Estructura de una Clase del catálogo -->
+  <xs:complexType name="ClaseType">
+    <xs:sequence>
+      <xs:element name="nombre" type="xs:string"/>
+      <xs:element name="aforoMax" type="AforoType"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+  </xs:complexType>
+
+  <!-- ==============================
+       ESTRUCTURA PRINCIPAL DEL DOCUMENTO
+       ============================== -->
+
+  <xs:element name="catalogoGimnasio">
+    <xs:complexType>
+      <xs:sequence>
+
+        <!-- Metadatos de la exportación -->
+        <xs:element name="metadatos">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="nombreGym" type="xs:string"/>
+              <xs:element name="fechaExportacion" type="xs:date"/>
+              <xs:element name="version" type="xs:string"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <!-- Lista de Planes (Obligamos a que haya mínimo 1 plan, max ilimitado) -->
+        <xs:element name="planes">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="plan" type="PlanType" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <!-- Lista de Clases (Obligamos a que haya mínimo 1 clase, max ilimitado) -->
+        <xs:element name="clases">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="clase" type="ClaseType" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>
