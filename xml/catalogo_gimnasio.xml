@@ -4,7 +4,7 @@
   xsi:noNamespaceSchemaLocation="catalogo_esquema.xsd">
 
   <metadatos>
-    <nombreGym>Gym APP Prometeo</nombreGym>
+    <nombreGym>123</nombreGym>
     <!-- La fecha debe cumplir el formato xs:date (AAAA-MM-DD) -->
     <fechaExportacion>2026-05-03</fechaExportacion>
     <version>1.0</version>
