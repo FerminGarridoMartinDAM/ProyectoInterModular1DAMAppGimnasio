@@ -103,6 +103,7 @@ public class CargarDatosInicialesSQL {
             pstmt.execute();
 
             System.out.println("✅ Mock Data inyectada con éxito.");
+            System.out.println("Datos cargados con éxito.");
 
         } catch (Exception e) {
             System.err.println("❌ ERROR al cargar datos: " + e.getMessage());
