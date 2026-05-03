@@ -1,17 +1,15 @@
 @startuml
 left to right direction
 
-' 1. Definición de los actores
+' 1. Definición de los actores principales (Aparecerán a la izquierda)
 actor "Usuario (Superclase)" as usuario
 actor "Socio" as socio
 actor "Entrenador" as entrenador
-actor "Secretario (Admin)" as secretario
+actor "Secretario" as secretario
 
-' 2. Jerarquía de herencia: Todos heredan las funciones base de Usuario
+' 2. Jerarquía de herencia (Lado izquierdo)
 usuario <|-- socio  
-
 usuario <|-- entrenador
-
 usuario <|-- secretario
 
 rectangle "Sistema Gimnasio APP" {
@@ -21,21 +19,26 @@ rectangle "Sistema Gimnasio APP" {
   usecase "Cerrar Sesión" as UC2
   
   ' Funciones de Cliente (Socio)
-  usecase "Contratar Plan/Suscripción" as UC3
-  usecase "Consultar Suscripción Activa" as UC4
-  usecase "Reservar Sesión/Clase" as UC5
+  usecase "Mis Reservas (En const.)" as UC3
   
-  ' Funciones de Operaciones (Entrenador y Secretario)
-  usecase "Consultar Horario de Clases" as UC6
-  usecase "Ver Lista de Asistentes" as UC7
-  usecase "Crear Sesión" as UC8
+  ' Funciones de Entrenador
+  usecase "Ver mi horario de clases" as UC4
+  usecase "Ver Listado de Socios (Lectura)" as UC5
   
-  ' Funciones de Administración (Secretario)
-  usecase "Gestionar Socios (Altas/Bajas)" as UC9
-  usecase "Gestionar Entrenadores" as UC10
-  usecase "Administrar Planes de Precios" as UC11
-  usecase "Gestionar Copias de Seguridad" as UC12
+  ' Funciones de Operaciones (Secretario y Admin)
+  usecase "Gestionar Socios (Altas/Bajas)" as UC6
+  usecase "Gestionar Entrenadores" as UC7
+  usecase "Gestionar Planes y Suscripciones" as UC8
+  usecase "Gestionar Sesiones y Reservas" as UC9
+  
+  ' Funciones Exclusivas de Administración (Admin)
+  usecase "Gestionar Secretarios" as UC10
+  usecase "Borrado Permanente de Registros" as UC11
+  usecase "Herramientas de Sistema (Backup/Reset)" as UC12
 }
+
+' 3. Definición del Administrador (Para que aparezca a la derecha)
+actor "Administrador (Admin)" as admin
 
 ' --- RELACIONES ---
 
@@ -45,22 +48,27 @@ usuario --> UC2
 
 ' Relaciones del Socio
 socio --> UC3
-socio --> UC4
-socio --> UC5
 
 ' Relaciones del Entrenador
-entrenador --> UC6
-entrenador --> UC7
-entrenador --> UC8
+entrenador --> UC4
+entrenador --> UC5
 
 ' Relaciones del Secretario
-' Como es el administrador, necesita ver horarios y asistentes para gestionar, 
-' además de sus funciones exclusivas de CRUD.
 secretario --> UC6
 secretario --> UC7
+secretario --> UC8
 secretario --> UC9
-secretario --> UC10
-secretario --> UC11
-secretario --> UC12
+
+' Relaciones del Administrador (Aparecerá a la derecha)
+' Usamos <-- para forzar que el actor se dibuje en el lado derecho del rectángulo
+UC1 <-- admin
+UC2 <-- admin
+UC6 <-- admin
+UC7 <-- admin
+UC8 <-- admin
+UC9 <-- admin
+UC10 <-- admin
+UC11 <-- admin
+UC12 <-- admin
 
 @enduml
