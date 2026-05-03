@@ -11,6 +11,9 @@ import model.enums.EstadoUsuario;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -43,7 +46,7 @@ public class GestorBackup {
      * Recibe el DTO estructurado en Maps crudos (GimanasioMapsJsonDTO) ya preparado y se lo
      * entrega a Gson para que lo imprima físicamente en el disco duro.
      */
-    private void escribirArchivoJson(GimnasioMapsJsonDTO gimnasioMapsJsonDTO, String rutaDestino) {
+    private void escribirArchivosJsonConGson(GimnasioMapsJsonDTO gimnasioMapsJsonDTO, String rutaDestino) {
         // Configuramos Gson con Pretty Printing para que el JSON sea legible por humanos
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         FileWriter fileWriter = null;
@@ -183,7 +186,7 @@ public class GestorBackup {
         );
 
         // 9. Arrancamos el motor de escritura
-        escribirArchivoJson(gimnasioMapsJsonDTO, "src/main/resources/backup_gimnasio.json");
+        escribirArchivosJsonConGson(gimnasioMapsJsonDTO, "src/main/resources/backup_gimnasio.json");
     }
 
     // --- Métodos Auxiliares de Despiece (Evitando engordar el bucle principal) ---
@@ -203,108 +206,154 @@ public class GestorBackup {
         datosUsuario.put("tipo_rol", "SECRETARIO");
     }
 
+
+
+    // =========================================================================
+    // LECTOR PRIVADO (Simetría arquitectónica)
+    // =========================================================================
+    /*
+     * Se encarga EXCLUSIVAMENTE de abrir el archivo físico, leer el JSON usando
+     *  Gson y devolvernos la estructura cruda (GimnasioMapsJsonDTO).
+     */
+    private GimnasioMapsJsonDTO leerArchivoJsonConGson(String rutaOrigen) {
+        Gson gson = new Gson();
+        FileReader fileReader = null;
+        GimnasioMapsJsonDTO gimnasioMapsJsonDTO = null;
+
+        try {
+            fileReader = new FileReader(rutaOrigen);
+            // Gson lee el archivo y mapea el JSON a nuestra clase GminasioMapsJsonDTO ( esto el wrapper)
+            // GimnasioMapsJsonDTO.class es la forma que tiene gson de construir los objetos (new GimnasioMapsJsonDTO),
+            // Hay que hacerlo asi porque es como funciona Gson , si lo hubieramos creado de la otra manera Gso nos daria fallo porque Gson sobreescribe
+            //  GimnasioMapsJsonDTO gimnasioMapsJsonDTO = new GimnasioMapsJsonDOT()  por  GimnasioMapsJsonDTO gimnasioMapsJsonDTO = new GimnasioMapsJsonDTO.class() o algo asi.
+            gimnasioMapsJsonDTO = gson.fromJson(fileReader, GimnasioMapsJsonDTO.class);
+
+        } catch (IOException e) {
+            System.out.println("❌ ERROR al leer el archivo JSON: " + e.getMessage());
+        } finally {
+            // Cerramos el flujo de datos físicos de forma segura
+            if (fileReader != null) {
+                try {
+                    fileReader.close();
+                } catch (IOException e) {
+                    System.out.println("❌ Error al cerrar el FileReader.");
+                }
+            }
+        }
+
+        return gimnasioMapsJsonDTO;
+    }
+
     // =========================================================================
     // 3. IMPORTAR: DE TEXTO CRUDO A OBJETOS VIVOS (Lectura y Resurrección)
     // =========================================================================
     /*
-     * El proceso inverso. Gson lee el archivo y nos devuelve la clase 'GimnasioMapsJsonDTO'
-     * (funciona exactamente como cuando consumimos el JSON de una API externa).
-     * Nosotros iteramos esos Maps crudos, hacemos los 'new Clase()' correspondientes
-     * usando LocalDate.parse() para revivir las fechas, y finalmente empaquetamos
-     * todo en la clase 'GimnasioObjetosJavaDTO' para el Controlador.
+     *  Hemos separado la lectura física en 'leerArchivoJsonConGson()'.
+     * Ese método auxiliar hace el trabajo sucio: Gson lee el archivo y nos devuelve la
+     * clase 'GimnasioMapsJsonDTO' (funciona exactamente como consumir el JSON de una API).
+     *
+     * EL TRABAJO DE ESTE MÉTODO ES:
+     * Recibir esos Maps crudos del método auxiliar, iterarlos, hacer los 'new Clase()'
+     * correspondientes usando LocalDate.parse() para revivir las fechas, y finalmente
+     * empaquetar todo en la clase 'GimnasioObjetosJavaDTO' para mandarlo al Controlador.
      */
     public GimnasioObjetosJavaDTO importarBackup() {
-        Gson gson = new Gson();
         String ruta = "src/main/resources/backup_gimnasio.json";
 
-        // 1. Preparamos el DTO final de objetos instanciados. Si el archivo no existe,
-        // devolvemos esto vacío para evitar NullPointerExceptions en el Controlador.
+        // Preparamos el DTO final de objetos instanciados
         GimnasioObjetosJavaDTO dtoVivo = new GimnasioObjetosJavaDTO();
+
+        /* CÓDIGO ANTIGUO:
+        Gson gson = new Gson();
         FileReader fileReader = null;
 
         try {
             fileReader = new FileReader(ruta);
 
-            // 2. LEER DE GSON: Al usar nuestro GimnasioMapsJsonDTO, Gson usa Reflexión y
-            // nos rellena las listas de Maps sin necesidad de TypeTokens horribles.
+            // Gson lee el archivo y mapea el JSON a nuestra clase envoltorio
             GimnasioMapsJsonDTO gimnasioMapsJsonDTO = gson.fromJson(fileReader, GimnasioMapsJsonDTO.class);
+        */
 
-            if (gimnasioMapsJsonDTO != null) {
+        // --- NUEVA ARQUITECTURA ---
+        // 1. Delegamos la lectura física y el manejo de excepciones al método privado
+        GimnasioMapsJsonDTO gimnasioMapsJsonDTO = leerArchivoJsonConGson(ruta);
 
-                // --- 3. RECONSTRUIR USUARIOS ---
-                if (gimnasioMapsJsonDTO.getTablaUsuarios() != null) {
-                    List<Usuario> usuariosRecuperados = new ArrayList<>();
+        // 2. Si la lectura fue exitosa (el archivo existía y se leyó bien), reconstruimos
+        if (gimnasioMapsJsonDTO != null) {
 
-                    for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaUsuarios()) {
-                        // Gson lee los números como Double genéricos, forzamos la bajada a int
-                        int id = ((Double) datos.get(SchemDB.COL_USUARIO_ID)).intValue();
-                        String nombre = (String) datos.get(SchemDB.COL_USUARIO_NOMBRE);
-                        String apellido = (String) datos.get(SchemDB.COL_USUARIO_APELLIDO);
-                        String email = (String) datos.get(SchemDB.COL_USUARIO_EMAIL);
-                        String pass = (String) datos.get(SchemDB.COL_USUARIO_PASSWORD);
-                        String tel = (String) datos.get(SchemDB.COL_USUARIO_TELEFONO);
-                        EstadoUsuario estado = EstadoUsuario.valueOf((String) datos.get(SchemDB.COL_USUARIO_ESTADO));
+            // --- 3. RECONSTRUIR USUARIOS ---
+            if (gimnasioMapsJsonDTO.getTablaUsuarios() != null) {
+                List<Usuario> usuariosRecuperados = new ArrayList<>();
 
-                        // Leemos la etiqueta que pusimos al exportar para saber a qué hijo llamar
-                        String rol = (String) datos.get("tipo_rol");
+                for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaUsuarios()) {
+                    int id = ((Double) datos.get(SchemDB.COL_USUARIO_ID)).intValue();
+                    String nombre = (String) datos.get(SchemDB.COL_USUARIO_NOMBRE);
+                    String apellido = (String) datos.get(SchemDB.COL_USUARIO_APELLIDO);
+                    String email = (String) datos.get(SchemDB.COL_USUARIO_EMAIL);
+                    String pass = (String) datos.get(SchemDB.COL_USUARIO_PASSWORD);
+                    String tel = (String) datos.get(SchemDB.COL_USUARIO_TELEFONO);
+                    EstadoUsuario estado = EstadoUsuario.valueOf((String) datos.get(SchemDB.COL_USUARIO_ESTADO));
 
-                        if (rol.equals("SOCIO")) {
-                            usuariosRecuperados.add(reconstruirSocio(datos, id, nombre, apellido, email, pass, tel, estado));
-                        } else if (rol.equals("ENTRENADOR")) {
-                            usuariosRecuperados.add(reconstruirEntrenador(datos, id, nombre, apellido, email, pass, tel, estado));
-                        } else if (rol.equals("SECRETARIO")) {
-                            usuariosRecuperados.add(reconstruirSecretario(datos, id, nombre, apellido, email, pass, tel, estado));
-                        }
+                    String rol = (String) datos.get("tipo_rol");
+
+                    if (rol.equals("SOCIO")) {
+                        usuariosRecuperados.add(reconstruirSocio(datos, id, nombre, apellido, email, pass, tel, estado));
+                    } else if (rol.equals("ENTRENADOR")) {
+                        usuariosRecuperados.add(reconstruirEntrenador(datos, id, nombre, apellido, email, pass, tel, estado));
+                    } else if (rol.equals("SECRETARIO")) {
+                        usuariosRecuperados.add(reconstruirSecretario(datos, id, nombre, apellido, email, pass, tel, estado));
                     }
-                    dtoVivo.setUsuarios(usuariosRecuperados);
                 }
-
-                // --- 4. RECONSTRUIR CLASES ---
-                if (gimnasioMapsJsonDTO.getTablaClases() != null) {
-                    List<Clase> clasesRecuperadas = new ArrayList<>();
-                    for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaClases()) {
-                        clasesRecuperadas.add(reconstruirClase(datos));
-                    }
-                    dtoVivo.setClases(clasesRecuperadas);
-                }
-
-                // --- 5. RECONSTRUIR SESIONES ---
-                if (gimnasioMapsJsonDTO.getTablaSesiones() != null) {
-                    List<Sesion> sesionesRecuperadas = new ArrayList<>();
-                    for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaSesiones()) {
-                        sesionesRecuperadas.add(reconstruirSesion(datos));
-                    }
-                    dtoVivo.setSesiones(sesionesRecuperadas);
-                }
-
-                // --- 6. RECONSTRUIR PLANES ---
-                if (gimnasioMapsJsonDTO.getTablaPlanes() != null) {
-                    List<Plan> planesRecuperados = new ArrayList<>();
-                    for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaPlanes()) {
-                        planesRecuperados.add(reconstruirPlan(datos));
-                    }
-                    dtoVivo.setPlanes(planesRecuperados);
-                }
-
-                // --- 7. RECONSTRUIR SUSCRIPCIONES ---
-                if (gimnasioMapsJsonDTO.getTablaSuscripciones() != null) {
-                    List<Suscripcion> suscripcionesRecuperadas = new ArrayList<>();
-                    for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaSuscripciones()) {
-                        suscripcionesRecuperadas.add(reconstruirSuscripcion(datos));
-                    }
-                    dtoVivo.setSuscripciones(suscripcionesRecuperadas);
-                }
-
-                // --- 8. RECONSTRUIR RESERVAS ---
-                if (gimnasioMapsJsonDTO.getTablaReservas() != null) {
-                    List<Reserva> reservasRecuperadas = new ArrayList<>();
-                    for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaReservas()) {
-                        reservasRecuperadas.add(reconstruirReserva(datos));
-                    }
-                    dtoVivo.setReservas(reservasRecuperadas);
-                }
+                dtoVivo.setUsuarios(usuariosRecuperados);
             }
 
+            // --- 4. RECONSTRUIR CLASES ---
+            if (gimnasioMapsJsonDTO.getTablaClases() != null) {
+                List<Clase> clasesRecuperadas = new ArrayList<>();
+                for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaClases()) {
+                    clasesRecuperadas.add(reconstruirClase(datos));
+                }
+                dtoVivo.setClases(clasesRecuperadas);
+            }
+
+            // --- 5. RECONSTRUIR SESIONES ---
+            if (gimnasioMapsJsonDTO.getTablaSesiones() != null) {
+                List<Sesion> sesionesRecuperadas = new ArrayList<>();
+                for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaSesiones()) {
+                    sesionesRecuperadas.add(reconstruirSesion(datos));
+                }
+                dtoVivo.setSesiones(sesionesRecuperadas);
+            }
+
+            // --- 6. RECONSTRUIR PLANES ---
+            if (gimnasioMapsJsonDTO.getTablaPlanes() != null) {
+                List<Plan> planesRecuperados = new ArrayList<>();
+                for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaPlanes()) {
+                    planesRecuperados.add(reconstruirPlan(datos));
+                }
+                dtoVivo.setPlanes(planesRecuperados);
+            }
+
+            // --- 7. RECONSTRUIR SUSCRIPCIONES ---
+            if (gimnasioMapsJsonDTO.getTablaSuscripciones() != null) {
+                List<Suscripcion> suscripcionesRecuperadas = new ArrayList<>();
+                for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaSuscripciones()) {
+                    suscripcionesRecuperadas.add(reconstruirSuscripcion(datos));
+                }
+                dtoVivo.setSuscripciones(suscripcionesRecuperadas);
+            }
+
+            // --- 8. RECONSTRUIR RESERVAS ---
+            if (gimnasioMapsJsonDTO.getTablaReservas() != null) {
+                List<Reserva> reservasRecuperadas = new ArrayList<>();
+                for (Map<String, Object> datos : gimnasioMapsJsonDTO.getTablaReservas()) {
+                    reservasRecuperadas.add(reconstruirReserva(datos));
+                }
+                dtoVivo.setReservas(reservasRecuperadas);
+            }
+        }
+
+        /* CÓDIGO ANTIGUO (Cierre del try-catch y de la lectura de archivos):
         } catch (IOException e) {
             System.out.println("❌ ERROR al leer el backup global: " + e.getMessage());
         } finally {
@@ -317,6 +366,7 @@ public class GestorBackup {
                 }
             }
         }
+        */
 
         // Entregamos el DTO vivo, listo para el Controlador
         return dtoVivo;
@@ -391,4 +441,47 @@ public class GestorBackup {
 
         return new Reserva(idSocio, idSesion, estado, fecha);
     }
+
+    // =========================================================================
+    // 4. VACIAR BASE DE DATOS
+    // =========================================================================
+    /*
+     * Vacía absolutamente todas las tablas sin borrar la estructura de las mismas.
+     * Usamos CASCADE para que al borrar un usuario, se borren sus reservas automáticamente.
+     * Usamos RESTART IDENTITY para que los contadores de ID vuelvan a 1.
+     */
+    public void vaciarBaseDatos() {
+        System.out.println("Ejecutando protocolo de vaciado de base de datos...");
+
+        // Ponemos todas las tablas principales. CASCADE se encargará de las tablas intermedias (reservas, suscripciones)
+        String query = "TRUNCATE TABLE " + SchemDB.TAB_USUARIO + ", " +
+                SchemDB.TAB_PLAN + ", " +
+                SchemDB.TAB_CLASE + " RESTART IDENTITY CASCADE;";
+
+        PreparedStatement pstmt = null;
+
+        try {
+            Connection conn = database.ConexionDB.getConexion();
+            pstmt = conn.prepareStatement(query);
+
+            pstmt.executeUpdate();
+            System.out.println("✅ Base de datos reseteada. Tablas vacías y contadores a 0.");
+
+        } catch (SQLException e) {
+            System.out.println("❌ ERROR Crítico al vaciar la base de datos: " + e.getMessage());
+        } finally {
+
+            if (pstmt != null) {
+                try {
+                    pstmt.close();
+                } catch (SQLException e) {
+                    System.out.println("❌ Error al cerrar el PreparedStatement.");
+                }
+            }
+        }
+    }
+
+
+
+
 }
