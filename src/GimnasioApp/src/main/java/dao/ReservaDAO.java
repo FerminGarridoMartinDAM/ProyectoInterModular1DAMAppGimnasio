@@ -9,4 +9,5 @@ public interface ReservaDAO {
     int update(Reserva reserva);
     // OJO: Necesitamos ambos IDs para saber exactamente qué reserva borrar
     int delete(int idSocio, int idSesion);
+    Reserva selectById(int idSocio, int idSesion);
 }

@@ -82,6 +82,35 @@ public class ReservaDAOPostgresImpl implements ReservaDAO {
     }
 
     @Override
+    public Reserva selectById(int idSocio, int idSesion) {
+        Reserva reservaEncontrada = null;
+
+        String query = String.format("SELECT * FROM %s WHERE %s = ? AND %s = ?",
+                SchemDB.TAB_RESERVA, SchemDB.COL_RES_SOCIO, SchemDB.COL_RES_SESION);
+
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, idSocio);
+            preparedStatement.setInt(2, idSesion);
+
+            resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                EstadoReserva estado = EstadoReserva.valueOf(
+                        resultSet.getString(SchemDB.COL_RES_ESTADO).trim().toUpperCase()
+                );
+                LocalDateTime fecha = resultSet.getTimestamp(SchemDB.COL_RES_FECHA).toLocalDateTime();
+
+                reservaEncontrada = new Reserva(idSocio, idSesion, estado, fecha);
+            }
+        } catch (SQLException e) {
+            System.out.println("❌ ERROR (selectById reserva): " + e.getMessage());
+        }
+
+        return reservaEncontrada;
+    }
+
+    @Override
     public int update(Reserva reserva) {
         // En una tabla de unión, el WHERE suele usar ambos IDs para identificar la fila única
         String query = String.format("UPDATE %s SET %s=? WHERE %s=? AND %s=?",
