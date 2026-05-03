@@ -68,4 +68,4 @@ Como el proyecto está preparado para abrirse y probarse directamente desde el c
 
 ## 8. Esquema del Sistema
 
-![Esquema del sistema](<Img/Esquema del Sistema.png>)
+![Esquema del sistema](img/Esquema_del_sistema.png)

@@ -5,7 +5,7 @@ El objetivo principal de este proyecto es optimizar y facilitar la gestión diar
 
 ## Idea de la aplicación
 He desarrollado una aplicación de consola en Java que cuenta con las siguientes funcionalidades principales:
-- Gestionar a los socios y a los entrenadores (altas, modificaciones, eliminaciones).
+- Gestionar a los socios, a los entrenadores y secretarios (altas, modificaciones, eliminaciones).
 - Crear y administrar los planes de precios o tarifas.
 - Organizar el calendario de las clases y actividades.
 - Permitir que los socios reserven plaza en las sesiones.
